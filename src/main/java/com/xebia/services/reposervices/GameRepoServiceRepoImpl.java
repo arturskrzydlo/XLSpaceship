@@ -2,7 +2,7 @@ package com.xebia.services.reposervices;
 
 import com.xebia.domains.Game;
 import com.xebia.repositories.GameRepository;
-import com.xebia.services.GameService;
+import com.xebia.services.GameRepoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -14,7 +14,7 @@ import java.util.stream.StreamSupport;
  * Created by artur.skrzydlo on 2017-05-11.
  */
 @Service
-public class GameServiceRepoImpl implements GameService {
+public class GameRepoServiceRepoImpl implements GameRepoService {
 
     private GameRepository gameRepository;
 

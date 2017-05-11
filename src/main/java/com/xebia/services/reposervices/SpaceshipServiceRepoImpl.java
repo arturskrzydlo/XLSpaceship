@@ -2,7 +2,7 @@ package com.xebia.services.reposervices;
 
 import com.xebia.domains.Spaceship;
 import com.xebia.repositories.SpaceshipRepository;
-import com.xebia.services.SpaceshipService;
+import com.xebia.services.SpaceshipRepoService;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.List;
@@ -12,7 +12,7 @@ import java.util.stream.StreamSupport;
 /**
  * Created by artur.skrzydlo on 2017-05-11.
  */
-public class SpaceshipServiceRepoImpl implements SpaceshipService {
+public class SpaceshipServiceRepoImpl implements SpaceshipRepoService {
 
     private SpaceshipRepository spaceshipRepository;
 

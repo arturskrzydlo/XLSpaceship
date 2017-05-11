@@ -5,5 +5,5 @@ import com.xebia.domains.Spaceship;
 /**
  * Created by artur.skrzydlo on 2017-05-11.
  */
-public interface SpaceshipService extends CRUDService<Spaceship> {
+public interface SpaceshipRepoService extends CRUDService<Spaceship> {
 }

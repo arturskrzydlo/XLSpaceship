@@ -2,7 +2,7 @@ package com.xebia.services.reposervices;
 
 import com.xebia.domains.Player;
 import com.xebia.repositories.PlayerRepository;
-import com.xebia.services.PlayerService;
+import com.xebia.services.PlayerRepoService;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.List;
@@ -12,7 +12,7 @@ import java.util.stream.StreamSupport;
 /**
  * Created by artur.skrzydlo on 2017-05-11.
  */
-public class PlayerServiceRepoImpl implements PlayerService {
+public class PlayerRepoServiceRepoImpl implements PlayerRepoService {
 
     private PlayerRepository playerRepository;
 

@@ -2,7 +2,7 @@ package com.xebia.services.reposervices;
 
 import com.xebia.domains.GameBoardPosition;
 import com.xebia.repositories.GameBoardPositionRepository;
-import com.xebia.services.GameBoardService;
+import com.xebia.services.GameBoardRepoService;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.List;
@@ -12,7 +12,7 @@ import java.util.stream.StreamSupport;
 /**
  * Created by artur.skrzydlo on 2017-05-11.
  */
-public class GameBoardPositionServiceRepoImpl implements GameBoardService {
+public class GameBoardPositionRepoServiceRepoImpl implements GameBoardRepoService {
 
     private GameBoardPositionRepository gameBoardPositionRepository;
 
