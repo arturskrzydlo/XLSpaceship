@@ -3,14 +3,13 @@ package com.xebia.domains;
 import lombok.Getter;
 import lombok.Setter;
 
-import javax.persistence.Entity;
+import javax.persistence.Embeddable;
 
 /**
  * Created by artur.skrzydlo on 2017-05-10.
  */
-@Entity
-@Getter
-@Setter
+
+@Getter @Setter @Embeddable
 public class SpaceshipProtocol extends AbstractDomainClass{
 
     private String hostname;
