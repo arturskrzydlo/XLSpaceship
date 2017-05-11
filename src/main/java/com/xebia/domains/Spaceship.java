@@ -13,7 +13,10 @@ import java.util.List;
 /**
  * Created by artur.skrzydlo on 2017-05-11.
  */
-@Getter @Setter @Entity public class Spaceship extends AbstractDomainClass {
+@Getter
+@Setter
+@Entity
+public class Spaceship extends AbstractDomainClass {
 
     private Boolean isAlive;
 

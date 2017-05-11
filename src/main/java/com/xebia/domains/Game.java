@@ -10,13 +10,19 @@ import javax.persistence.ManyToOne;
 /**
  * Created by artur.skrzydlo on 2017-05-11.
  */
-@Getter @Setter @Entity public class Game extends AbstractDomainClass {
+@Getter
+@Setter
+@Entity
+public class Game extends AbstractDomainClass {
 
-    @ManyToOne Player ownerPlayer;
+    @ManyToOne
+    Player ownerPlayer;
 
-    @ManyToOne Player secondPlayer;
+    @ManyToOne
+    Player secondPlayer;
 
-    @ManyToOne Player playerInTurn;
+    @ManyToOne
+    Player playerInTurn;
 
     GameStatus status;
 

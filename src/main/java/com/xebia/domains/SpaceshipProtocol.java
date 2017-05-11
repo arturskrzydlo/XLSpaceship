@@ -9,8 +9,10 @@ import javax.persistence.Embeddable;
  * Created by artur.skrzydlo on 2017-05-10.
  */
 
-@Getter @Setter @Embeddable
-public class SpaceshipProtocol extends AbstractDomainClass{
+@Getter
+@Setter
+@Embeddable
+public class SpaceshipProtocol extends AbstractDomainClass {
 
     private String hostname;
     private Integer port;
