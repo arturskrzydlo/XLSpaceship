@@ -11,7 +11,8 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 public class ProtocolController {
 
-    @RequestMapping(value = "/game/new", method = RequestMethod.POST) @ResponseStatus(HttpStatus.CREATED)
+    @RequestMapping(value = "/game/new", method = RequestMethod.POST)
+    @ResponseStatus(HttpStatus.CREATED)
     public GameDTO createNewGame(@RequestBody GameDTO game) {
 
         return game;
