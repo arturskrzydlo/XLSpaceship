@@ -15,5 +15,5 @@ import lombok.Setter;
 public class SpaceshipProtocolDTO {
 
     private String hostname;
-    private String port;
+    private Integer port;
 }

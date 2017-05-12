@@ -12,7 +12,7 @@ import javax.persistence.Embeddable;
 @Getter
 @Setter
 @Embeddable
-public class SpaceshipProtocol extends AbstractDomainClass {
+public class SpaceshipProtocol {
 
     private String hostname;
     private Integer port;

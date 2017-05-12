@@ -1,4 +1,4 @@
-package com.xebia.services.reposervices;
+package com.xebia.services.implementations.reposervices;
 
 import com.xebia.domains.Game;
 import com.xebia.repositories.GameRepository;

@@ -15,10 +15,10 @@ import lombok.Setter;
 @NoArgsConstructor
 public class GameDTO {
 
-    @JsonProperty("user_id")
-    private String userId;
-    @JsonProperty("full_name")
-    private String userName;
-    @JsonProperty("spaceship_protocol")
-    private SpaceshipProtocolDTO spaceshipProtocol;
+
+    private PlayerDTO opponent;
+    @JsonProperty("game_id")
+    private Integer gameId;
+    @JsonProperty("starting")
+    private PlayerDTO startingPlayer;
 }
