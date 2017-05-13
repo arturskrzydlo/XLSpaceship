@@ -23,7 +23,6 @@ public class ProtocolController {
     @ResponseStatus(HttpStatus.CREATED)
     public GameCreatedDTO createNewGame(@RequestBody PlayerDTO player) {
 
-
         return gameService.createNewGame(player);
     }
 }

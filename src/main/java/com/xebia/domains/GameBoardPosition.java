@@ -1,5 +1,6 @@
 package com.xebia.domains;
 
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -12,6 +13,7 @@ import javax.persistence.ManyToOne;
  */
 @Getter
 @Setter
+@EqualsAndHashCode
 @Entity
 public class GameBoardPosition extends AbstractDomainClass {
 

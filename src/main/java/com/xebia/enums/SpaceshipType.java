@@ -105,4 +105,7 @@ public enum SpaceshipType {
 
     public abstract Set<Point2D> getSpaceshipConstruction();
 
+    public int getNumberOfFields() {
+        return numberOfFields;
+    }
 }

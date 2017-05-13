@@ -19,9 +19,9 @@ import java.util.stream.IntStream;
 public class GameBoard {
 
     // rotation by which spaceship can be rotated in degrees
-    private static final int ROTATAION_ANGLE = 90;
-    private static final int BOARD_SIZE = 16;
-    private static final boolean CAN_BE_BEIGHBOUR = false;
+    public static final int ROTATAION_ANGLE = 90;
+    public static final int BOARD_SIZE = 16;
+    public static final boolean CAN_BE_BEIGHBOUR = false;
 
     private GameBoardPosition[][] fields = new GameBoardPosition[BOARD_SIZE][BOARD_SIZE];
     private List<Spaceship> spaceships;
@@ -228,6 +228,9 @@ public class GameBoard {
         return fields;
     }
 
+    public List<Spaceship> getSpaceships() {
+        return spaceships;
+    }
 
     @Override
     public String toString() {
