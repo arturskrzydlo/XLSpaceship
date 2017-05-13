@@ -105,7 +105,6 @@ public class GameBoard {
             }
         }
 
-        System.out.println(this);
         return true;
     }
 
