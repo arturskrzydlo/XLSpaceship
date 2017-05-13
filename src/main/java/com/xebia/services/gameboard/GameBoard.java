@@ -19,10 +19,10 @@ import java.util.stream.IntStream;
 public class GameBoard {
 
     // rotation by which spaceship can be rotated in degrees
-    public static final int ROTATAION_ANGLE = 90;
-    public static final int BOARD_SIZE = 16;
+    private static final int ROTATAION_ANGLE = 90;
+    private static final int BOARD_SIZE = 16;
+    private static final boolean CAN_BE_BEIGHBOUR = false;
 
-    private List<GameBoardPosition> gameBoardFields;
     private GameBoardPosition[][] fields = new GameBoardPosition[BOARD_SIZE][BOARD_SIZE];
     private List<Spaceship> spaceships;
 
@@ -31,6 +31,8 @@ public class GameBoard {
     }
 
     private void initializeGameBoard() {
+
+        fields = new GameBoardPosition[BOARD_SIZE][BOARD_SIZE];
 
         for (int row = 0; row < BOARD_SIZE; row++) {
 
@@ -74,22 +76,27 @@ public class GameBoard {
 
     private boolean placeSingleSpaceShipOnTheBoard(Spaceship spaceship) {
 
-        Set<Point2D> spaceShipConstruction = spaceship.getType().getSpaceshipConstruction();
+        Set<Point2D> spaceShipConstruction;
         List<GameBoardPosition> notCheckedPositions = Arrays.stream(fields).flatMap(Arrays::stream).collect(Collectors.toList());
         List<Integer> notCheckedRotations = new ArrayList<>();
-        IntStream.range(1, 9).forEach(rotation -> notCheckedRotations.add(rotation));
+
 
         boolean positionFound = false;
 
         while (!positionFound) {
 
             Optional<GameBoardPosition> choosenPosition = chooseRandomlyFromList(notCheckedPositions);
+            notCheckedRotations.clear();
+            IntStream.range(1, 5).forEach(rotation -> notCheckedRotations.add(rotation));
+
 
             if (!choosenPosition.isPresent()) {
                 return false;
             }
 
             while (!notCheckedRotations.isEmpty() && !positionFound) {
+                spaceShipConstruction = spaceship.getType().getSpaceshipConstruction();
+
                 int rotation = chooseRandomlyFromList(notCheckedRotations).get();
                 rotateSpaceshipConstruction(rotation, spaceShipConstruction);
                 transformConstrutionToChoosenPosition(spaceShipConstruction, choosenPosition.get());
@@ -98,12 +105,13 @@ public class GameBoard {
             }
         }
 
+        System.out.println(this);
         return true;
     }
 
     private boolean placeSpaceshipConstruction(Spaceship spaceship, Set<Point2D> spaceshipConstruction) {
 
-        boolean result = checkIfCanPlaceSpaceShipOnCoordinates(spaceshipConstruction);
+        boolean result = checkIfCanPlaceSpaceShipOnCoordinates(spaceshipConstruction, spaceship.getType());
 
         if (result) {
             spaceshipConstruction.stream().forEach(point -> {
@@ -117,7 +125,8 @@ public class GameBoard {
         return result;
     }
 
-    private boolean checkIfCanPlaceSpaceShipOnCoordinates(Set<Point2D> spaceshipConstruction) {
+    //TODO: to many if - refactor
+    private boolean checkIfCanPlaceSpaceShipOnCoordinates(Set<Point2D> spaceshipConstruction, SpaceshipType spaceshipType) {
         return spaceshipConstruction.stream().allMatch(point -> {
 
             int column = Double.valueOf(point.getX()).intValue();
@@ -128,11 +137,42 @@ public class GameBoard {
             }
 
             GameBoardPosition gameBoardPosition = fields[column][row];
+
             if (gameBoardPosition.getSpaceship() != null) {
                 return false;
             }
+
+            if (!CAN_BE_BEIGHBOUR && checkIfPositionIsNeighbourToOtherShip(column, row, spaceshipType)) {
+                return false;
+            }
+
             return true;
         });
+    }
+
+    private boolean checkIfPositionIsNeighbourToOtherShip(int column, int row, SpaceshipType spaceshipType) {
+
+        for (int rowIndex = -1; rowIndex <= 1; rowIndex++) {
+            for (int columnIndex = -1; columnIndex <= 1; columnIndex++) {
+                if (rowIndex == 0 && columnIndex == 0) {
+                    continue;
+                }
+
+                int newColumn = column + columnIndex;
+                int newRow = row + rowIndex;
+
+                if (newColumn < 0 || newColumn >= BOARD_SIZE || newRow < 0 || newRow >= BOARD_SIZE) {
+                    continue;
+                }
+
+                Spaceship spaceshipOnPosition = fields[newColumn][newRow].getSpaceship();
+                if (spaceshipOnPosition != null && !spaceshipOnPosition.getType().equals(spaceshipType)) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     private void transformConstrutionToChoosenPosition(Set<Point2D> spaceshipConstruction, GameBoardPosition choosenPosition) {
@@ -181,7 +221,52 @@ public class GameBoard {
         });
     }
 
-    public List<GameBoardPosition> getFields() {
+    public List<GameBoardPosition> getFieldsCollection() {
         return Arrays.stream(fields).flatMap(Arrays::stream).collect(Collectors.toList());
+    }
+
+    public GameBoardPosition[][] getFields() {
+        return fields;
+    }
+
+
+    @Override
+    public String toString() {
+
+        StringBuilder stringBuilder = new StringBuilder("\n");
+
+
+        for (int row = 0; row < fields.length; row++) {
+            int column = 0;
+
+            //print columns (Y) axis values
+            if (row == 0) {
+                stringBuilder.append("   ");
+                for (column = 0; column < BOARD_SIZE; column++) {
+                    stringBuilder.append(fields[row][column].getColumn() + " ");
+                }
+                stringBuilder.append("\n");
+                column = 0;
+            }
+
+            //print rows (X) axis values
+            stringBuilder.append(fields[row][column].getRow() + "  ");
+
+
+            for (column = 0; column < fields[0].length; column++) {
+
+                GameBoardPosition position = fields[row][column];
+
+                if (position.getSpaceship() == null) {
+                    stringBuilder.append("- ");
+                } else {
+                    stringBuilder.append("X ");
+                }
+            }
+
+            stringBuilder.append("\n");
+        }
+
+        return stringBuilder.toString();
     }
 }

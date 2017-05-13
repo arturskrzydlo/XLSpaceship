@@ -38,14 +38,12 @@ public enum SpaceshipType {
 
             Set<Point2D> spaceshipConstruction = new HashSet<>();
 
-            spaceshipConstruction.add(new Point2D.Double(2, -1));
-            spaceshipConstruction.add(new Point2D.Double(2, 1));
-            spaceshipConstruction.add(new Point2D.Double(1, -1));
-            spaceshipConstruction.add(new Point2D.Double(1, 1));
-            spaceshipConstruction.add(new Point2D.Double(-1, -1));
-            spaceshipConstruction.add(new Point2D.Double(-1, 1));
-            spaceshipConstruction.add(new Point2D.Double(-2, -1));
-            spaceshipConstruction.add(new Point2D.Double(-2, 1));
+            spaceshipConstruction.add(new Point2D.Double(-3, 0));
+            spaceshipConstruction.add(new Point2D.Double(-2, 0));
+            spaceshipConstruction.add(new Point2D.Double(-1, 0));
+            spaceshipConstruction.add(new Point2D.Double(0, 1));
+            spaceshipConstruction.add(new Point2D.Double(0, 2));
+
 
             return spaceshipConstruction;
         }
