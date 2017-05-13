@@ -1,4 +1,4 @@
-package com.xebia.services.implementations;
+package com.xebia.services;
 
 import com.xebia.domains.Game;
 import com.xebia.domains.Player;
@@ -6,9 +6,7 @@ import com.xebia.domains.SpaceshipProtocol;
 import com.xebia.dto.GameCreatedDTO;
 import com.xebia.dto.PlayerDTO;
 import com.xebia.enums.GameStatus;
-import com.xebia.services.GameRepoService;
-import com.xebia.services.GameService;
-import com.xebia.services.PlayerRepoService;
+import com.xebia.services.gameboard.GameBoardService;
 import com.xebia.util.DTOMapperUtil;
 import com.xebia.util.OwnerUtil;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,6 +26,9 @@ public class GameServiceImpl implements GameService {
     @Autowired
     private PlayerRepoService playerRepoService;
 
+    @Autowired
+    private GameBoardService gameBoardService;
+
     @Override
     public GameCreatedDTO createNewGame(PlayerDTO player) {
 
@@ -42,6 +43,9 @@ public class GameServiceImpl implements GameService {
         newGame.setStatus(GameStatus.ACTIVE);
 
         newGame = gameRepoService.saveOrUpdate(newGame);
+
+        gameBoardService.createGameBoard();
+
         return DTOMapperUtil.mapGameToGameCreatedDTO(newGame);
     }
 

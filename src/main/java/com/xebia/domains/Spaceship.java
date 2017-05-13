@@ -2,6 +2,7 @@ package com.xebia.domains;
 
 import com.xebia.enums.SpaceshipType;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import javax.persistence.CascadeType;
@@ -15,12 +16,17 @@ import java.util.List;
  */
 @Getter
 @Setter
+@NoArgsConstructor
 @Entity
 public class Spaceship extends AbstractDomainClass {
 
-    private Boolean isAlive;
+    private Boolean isAlive = true;
 
     private SpaceshipType type;
+
+    public Spaceship(SpaceshipType type) {
+        this.type = type;
+    }
 
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, mappedBy = "spaceship")
     List<GameBoardPosition> positions = new ArrayList<>();

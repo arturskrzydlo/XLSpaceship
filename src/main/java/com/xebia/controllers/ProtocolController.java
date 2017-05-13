@@ -14,8 +14,10 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 public class ProtocolController {
 
+    //TODO: add logging
     @Autowired
     private GameService gameService;
+
 
     @RequestMapping(value = "/game/new", method = RequestMethod.POST)
     @ResponseStatus(HttpStatus.CREATED)

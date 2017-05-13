@@ -3,6 +3,7 @@ package com.xebia.domains;
 import lombok.Getter;
 import lombok.Setter;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.ManyToOne;
 
@@ -18,7 +19,7 @@ public class GameBoardPosition extends AbstractDomainClass {
     private Character column;
     private Boolean isHit;
 
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.ALL)
     Spaceship spaceship;
 
 }

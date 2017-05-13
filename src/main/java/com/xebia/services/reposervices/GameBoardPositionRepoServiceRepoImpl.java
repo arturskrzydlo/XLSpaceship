@@ -1,4 +1,4 @@
-package com.xebia.services.implementations.reposervices;
+package com.xebia.services.reposervices;
 
 import com.xebia.domains.GameBoardPosition;
 import com.xebia.repositories.GameBoardPositionRepository;
@@ -42,5 +42,11 @@ public class GameBoardPositionRepoServiceRepoImpl implements GameBoardRepoServic
     @Override
     public void delete(Integer id) {
         gameBoardPositionRepository.delete(id);
+    }
+
+
+    @Override
+    public List<GameBoardPosition> batchSave(List<GameBoardPosition> positions) {
+        return (List<GameBoardPosition>) gameBoardPositionRepository.save(positions);
     }
 }
