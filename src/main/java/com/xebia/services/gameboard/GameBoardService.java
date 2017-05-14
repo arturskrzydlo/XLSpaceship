@@ -6,4 +6,6 @@ package com.xebia.services.gameboard;
 public interface GameBoardService {
 
     GameBoard createGameBoard();
+
+    GameBoard createEmptyGameBoard();
 }

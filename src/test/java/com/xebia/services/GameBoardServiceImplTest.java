@@ -6,7 +6,9 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.*;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 import org.springframework.test.context.junit4.SpringRunner;
 
 /**
@@ -38,13 +40,6 @@ public class GameBoardServiceImplTest {
         GameBoard gameBoard = gameBoardService.createGameBoard();
         Assert.assertNotNull(gameBoard);
         Assert.assertEquals(gameBoard.getFieldsCollection().size(), GameBoard.BOARD_SIZE * GameBoard.BOARD_SIZE);
-    }
-
-    @Test
-    public void allGamePositionHasBeenSaved() {
-
-        gameBoardService.createGameBoard();
-        Mockito.verify(gameBoardRepoService, Mockito.times(1)).batchSave(Matchers.anyList());
     }
 
 

@@ -2,6 +2,8 @@ package com.xebia.controllers;
 
 import com.xebia.dto.GameCreatedDTO;
 import com.xebia.dto.PlayerDTO;
+import com.xebia.dto.SalvoDTO;
+import com.xebia.dto.SalvoResultDTO;
 import com.xebia.services.GameService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -24,5 +26,14 @@ public class ProtocolController {
     public GameCreatedDTO createNewGame(@RequestBody PlayerDTO player) {
 
         return gameService.createNewGame(player);
+    }
+
+
+    @RequestMapping(value = "/game/{gameId}", method = RequestMethod.PUT)
+    public SalvoResultDTO receiveSalvo(@PathVariable Integer gameId, @RequestBody SalvoDTO salvo) {
+
+
+        return new SalvoResultDTO();
+
     }
 }

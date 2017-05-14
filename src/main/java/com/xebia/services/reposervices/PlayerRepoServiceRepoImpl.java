@@ -1,6 +1,8 @@
 package com.xebia.services.reposervices;
 
 import com.xebia.domains.Player;
+import com.xebia.dto.PlayerDTO;
+import com.xebia.enums.PlayerType;
 import com.xebia.repositories.PlayerRepository;
 import com.xebia.services.PlayerRepoService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,5 +44,16 @@ public class PlayerRepoServiceRepoImpl implements PlayerRepoService {
     @Override
     public void delete(Integer id) {
         playerRepository.delete(id);
+    }
+
+
+    @Override
+    public Player findMyPlayer() {
+        return playerRepository.findByPlayerType(PlayerType.OWNER);
+    }
+
+    @Override
+    public Player findOpponentPlayer(PlayerDTO opponent) {
+        return playerRepository.findByUserIdAndFullName(opponent.getUserId(), opponent.getFullName());
     }
 }

@@ -1,6 +1,7 @@
 package com.xebia.repositories;
 
 import com.xebia.domains.Player;
+import com.xebia.enums.PlayerType;
 import org.springframework.data.repository.CrudRepository;
 
 /**
@@ -8,4 +9,7 @@ import org.springframework.data.repository.CrudRepository;
  */
 public interface PlayerRepository extends CrudRepository<Player, Integer> {
 
+    Player findByPlayerType(PlayerType playerType);
+
+    Player findByUserIdAndFullName(String userId, String fullName);
 }

@@ -5,6 +5,7 @@ import com.xebia.dto.GameCreatedDTO;
 import com.xebia.dto.PlayerDTO;
 import com.xebia.dto.SpaceshipProtocolDTO;
 import com.xebia.enums.GameStatus;
+import com.xebia.services.gameboard.GameBoard;
 import com.xebia.services.gameboard.GameBoardService;
 import com.xebia.util.DTOMapperUtil;
 import org.junit.Assert;
@@ -52,6 +53,7 @@ public class GameServiceImplTest {
         game.setOwnerPlayer(DTOMapperUtil.mapPlayerDTOToPlayer(playerDTO));
         game.setId(1);
 
+        Mockito.when(gameBoardService.createGameBoard()).thenReturn(new GameBoard());
         Mockito.when(gameRepoService.saveOrUpdate(Matchers.any())).thenReturn(game);
         GameCreatedDTO gameDTO = gameService.createNewGame(playerDTO);
 

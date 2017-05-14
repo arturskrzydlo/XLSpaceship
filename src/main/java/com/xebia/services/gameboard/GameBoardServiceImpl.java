@@ -22,10 +22,13 @@ public class GameBoardServiceImpl implements GameBoardService {
 
         GameBoard gameBoard = new GameBoard();
         gameBoard.placeSpaceshipsOnTheBoard();
-        gameBoardRepoService.batchSave(gameBoard.getFieldsCollection());
-
         logger.info(gameBoard.toString());
         return gameBoard;
 
+    }
+
+    @Override
+    public GameBoard createEmptyGameBoard() {
+        return new GameBoard();
     }
 }
