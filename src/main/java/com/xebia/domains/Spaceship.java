@@ -20,7 +20,7 @@ import java.util.List;
 @Entity
 public class Spaceship extends AbstractDomainClass {
 
-    private Boolean isAlive = true;
+    private boolean alive = true;
 
     private SpaceshipType type;
 

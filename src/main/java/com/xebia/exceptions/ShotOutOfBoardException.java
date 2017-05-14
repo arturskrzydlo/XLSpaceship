@@ -5,7 +5,7 @@ import java.text.MessageFormat;
 /**
  * Created by artur.skrzydlo on 2017-05-13.
  */
-public class ShotOutOfBoardException extends Exception {
+public class ShotOutOfBoardException extends RuntimeException {
 
     private static final String MESSAGE = "Shot {0} was outside of a game board !";
     private String shot = "";

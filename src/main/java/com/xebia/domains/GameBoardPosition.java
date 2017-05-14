@@ -1,5 +1,6 @@
 package com.xebia.domains;
 
+import com.xebia.enums.HitStatus;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
@@ -19,7 +20,9 @@ public class GameBoardPosition extends AbstractDomainClass {
 
     private Character row;
     private Character column;
-    private Boolean isHit;
+
+    //TODO: change to hitStatus status with three states
+    private HitStatus hitStatus = HitStatus.NOT_FIRED_YET;
 
     @ManyToOne
     private Game game;

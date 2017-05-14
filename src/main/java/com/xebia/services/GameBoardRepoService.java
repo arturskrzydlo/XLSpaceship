@@ -9,5 +9,10 @@ import java.util.List;
  */
 public interface GameBoardRepoService extends CRUDService<GameBoardPosition> {
 
-    public List<GameBoardPosition> batchSave(List<GameBoardPosition> positions);
+    List<GameBoardPosition> batchSave(List<GameBoardPosition> positions);
+
+    List<GameBoardPosition> getOwnerGameBoardByGame(Integer gameId);
+
+    List<GameBoardPosition> getOpponentPlayerByGame(Integer gameId, Integer playerId);
+
 }

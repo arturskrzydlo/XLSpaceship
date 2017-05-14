@@ -33,7 +33,7 @@ public class ProtocolController {
     public SalvoResultDTO receiveSalvo(@PathVariable Integer gameId, @RequestBody SalvoDTO salvo) {
 
 
-        return new SalvoResultDTO();
+        return gameService.receiveSalvo(salvo, gameId);
 
     }
 }

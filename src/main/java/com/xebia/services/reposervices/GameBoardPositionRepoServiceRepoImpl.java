@@ -1,6 +1,7 @@
 package com.xebia.services.reposervices;
 
 import com.xebia.domains.GameBoardPosition;
+import com.xebia.enums.PlayerType;
 import com.xebia.repositories.GameBoardPositionRepository;
 import com.xebia.services.GameBoardRepoService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,5 +49,15 @@ public class GameBoardPositionRepoServiceRepoImpl implements GameBoardRepoServic
     @Override
     public List<GameBoardPosition> batchSave(List<GameBoardPosition> positions) {
         return (List<GameBoardPosition>) gameBoardPositionRepository.save(positions);
+    }
+
+    @Override
+    public List<GameBoardPosition> getOwnerGameBoardByGame(Integer gameId) {
+        return gameBoardPositionRepository.findByGameIdAndPlayerPlayerType(gameId, PlayerType.OWNER);
+    }
+
+    @Override
+    public List<GameBoardPosition> getOpponentPlayerByGame(Integer gameId, Integer playerId) {
+        return gameBoardPositionRepository.findByGameIdAndPlayerId(gameId, playerId);
     }
 }

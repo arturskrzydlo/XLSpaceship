@@ -50,11 +50,8 @@ public class GameBoard {
     private void initializeSpaceshipFormation() {
 
         spaceships = new ArrayList<>();
-        spaceships.add(new Spaceship(SpaceshipType.WINGER));
-        spaceships.add(new Spaceship(SpaceshipType.ANGLE));
-        spaceships.add(new Spaceship(SpaceshipType.ACLASS));
-        spaceships.add(new Spaceship(SpaceshipType.BCLASS));
-        spaceships.add(new Spaceship(SpaceshipType.SCLASS));
+        Arrays.stream(SpaceshipType.values()).forEach(spaceshipType -> spaceships.add(new Spaceship(spaceshipType)));
+
     }
 
     public void placeSpaceshipsOnTheBoard() {

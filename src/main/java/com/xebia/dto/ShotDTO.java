@@ -17,4 +17,9 @@ public class ShotDTO {
     public ShotDTO(String field) {
         this.field = field;
     }
+
+    @Override
+    public String toString() {
+        return field;
+    }
 }
