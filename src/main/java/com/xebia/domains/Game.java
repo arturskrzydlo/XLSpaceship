@@ -3,11 +3,11 @@ package com.xebia.domains;
 import com.xebia.enums.GameStatus;
 import lombok.Getter;
 import lombok.Setter;
-import org.hibernate.annotations.Where;
 
-import javax.persistence.*;
-import java.util.ArrayList;
-import java.util.List;
+import javax.persistence.CascadeType;
+import javax.persistence.Entity;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 
 /**
  * Created by artur.skrzydlo on 2017-05-11.
@@ -26,15 +26,6 @@ public class Game extends AbstractDomainClass {
 
     @ManyToOne
     private Player playerInTurn;
-
-
-    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, mappedBy = "game")
-    @Where()
-    private List<GameBoardPosition> ownerPlayerGameBoardPositions = new ArrayList<>();
-
-
-
-
 
     private GameStatus status;
 

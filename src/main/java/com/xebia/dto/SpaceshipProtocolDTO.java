@@ -1,9 +1,6 @@
 package com.xebia.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 /**
  * Created by artur.skrzydlo on 2017-05-10.
@@ -12,6 +9,7 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
+@EqualsAndHashCode
 public class SpaceshipProtocolDTO {
 
     private String hostname;

@@ -1,7 +1,6 @@
 package com.xebia.services;
 
 import com.xebia.domains.Game;
-import com.xebia.domains.GameBoardPosition;
 import com.xebia.domains.Player;
 import com.xebia.domains.SpaceshipProtocol;
 import com.xebia.dto.GameCreatedDTO;
@@ -10,13 +9,13 @@ import com.xebia.dto.SalvoDTO;
 import com.xebia.dto.SalvoResultDTO;
 import com.xebia.enums.GameStatus;
 import com.xebia.enums.PlayerType;
+import com.xebia.services.gameboard.GameBoard;
 import com.xebia.services.gameboard.GameBoardService;
 import com.xebia.util.DTOMapperUtil;
 import com.xebia.util.OwnerUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
 import java.util.Random;
 
 /**
@@ -34,24 +33,56 @@ public class GameServiceImpl implements GameService {
     @Autowired
     private GameBoardService gameBoardService;
 
+    @Autowired
+    private GameBoardRepoService gameBoardRepoService;
+
     @Override
     public GameCreatedDTO createNewGame(PlayerDTO playerDTO) {
 
         Game newGame = new Game();
-
-        newGame.setOwnerPlayer(getOrCreateOwnerPlayer());
-
-        Player opponentPlayer = getOrCreateOpponentPlayer(playerDTO);
-        opponentPlayer.addAllGameBoardPosition(gameBoardService.createGameBoard().getFieldsCollection());
-        opponentPlayer.setPlayerType(PlayerType.OPPONENT);
-        newGame.setOpponentPlayer(opponentPlayer);
-
+        newGame = createGamePlayers(newGame, playerDTO);
         chooseRandomlyStartingPlayer(newGame);
         newGame.setStatus(GameStatus.ACTIVE);
-
         newGame = gameRepoService.saveOrUpdate(newGame);
 
+        gameBoardRepoService.batchSave(createGameBoardForOwnerPlayer(newGame).getFieldsCollection());
+        gameBoardRepoService.batchSave(createGameBoardForOpponentPlayer(newGame).getFieldsCollection());
+
         return DTOMapperUtil.mapGameToGameCreatedDTO(newGame);
+    }
+
+    private GameBoard createGameBoardForOwnerPlayer(Game newGame) {
+
+        GameBoard gameBoard = gameBoardService.createGameBoard();
+        gameBoard.getFieldsCollection().stream().forEach(gameBoardPosition -> {
+            gameBoardPosition.setPlayer(newGame.getOwnerPlayer());
+            gameBoardPosition.setGame(newGame);
+        });
+
+        return gameBoard;
+    }
+
+    private GameBoard createGameBoardForOpponentPlayer(Game newGame) {
+
+        GameBoard gameBoard = gameBoardService.createEmptyGameBoard();
+        gameBoard.getFieldsCollection().stream().forEach(gameBoardPosition -> {
+            gameBoardPosition.setPlayer(newGame.getOpponentPlayer());
+            gameBoardPosition.setGame(newGame);
+        });
+
+        return gameBoard;
+    }
+
+
+    private Game createGamePlayers(Game game, PlayerDTO playerDTO) {
+
+        game.setOwnerPlayer(getOrCreateOwnerPlayer());
+
+        Player opponentPlayer = getOrCreateOpponentPlayer(playerDTO);
+        opponentPlayer.setPlayerType(PlayerType.OPPONENT);
+        game.setOpponentPlayer(opponentPlayer);
+
+        return game;
     }
 
     private Player getOrCreateOwnerPlayer() {
@@ -78,7 +109,6 @@ public class GameServiceImpl implements GameService {
     public SalvoResultDTO receiveSalvo(SalvoDTO salvoDTO, Integer gameId) {
 
         Game actualGame = gameRepoService.getById(gameId);
-        List<GameBoardPosition> playerGameBoard = actualGame.getOwnerPlayer().getPlayerGameBoard();
      /*   SalvoResultDTO salvoResultDTO =  checkForHits(salvoDTO, playerGameBoard);*/
         return null;
     }
@@ -133,7 +163,6 @@ public class GameServiceImpl implements GameService {
         spaceshipProtocol.setPort(OwnerUtil.getSimulationUser().getSpaceshipProtocol().getPort());
         ownerPlayer.setProtocol(spaceshipProtocol);
         ownerPlayer.setPlayerType(PlayerType.OWNER);
-        ownerPlayer.addAllGameBoardPosition(gameBoardService.createGameBoard().getFieldsCollection());
         return ownerPlayer;
     }
 }

@@ -20,13 +20,14 @@ public class GameBoardPosition extends AbstractDomainClass {
     private Character row;
     private Character column;
     private Boolean isHit;
+
     @ManyToOne
     private Game game;
 
     @ManyToOne(cascade = CascadeType.ALL)
     private Spaceship spaceship;
 
-    @ManyToOne(cascade = CascadeType.ALL)
+    @ManyToOne
     private Player player;
 
 }
