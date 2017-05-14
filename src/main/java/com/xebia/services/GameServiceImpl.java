@@ -7,6 +7,7 @@ import com.xebia.domains.SpaceshipProtocol;
 import com.xebia.dto.*;
 import com.xebia.enums.*;
 import com.xebia.exceptions.NoSuchGameException;
+import com.xebia.exceptions.NotYourTurnException;
 import com.xebia.exceptions.ShotOutOfBoardException;
 import com.xebia.services.gameboard.GameBoard;
 import com.xebia.services.gameboard.GameBoardService;
@@ -60,11 +61,18 @@ public class GameServiceImpl implements GameService {
         if (actualGame == null || actualGame.getStatus().equals(GameStatus.FINISHED)) {
             throw new NoSuchGameException(gameId);
         }
-        SalvoResultDTO salvoResultDTO = checkForHits(salvoDTO, gameBoardRepoService.getOwnerGameBoardByGame(gameId));
+
+        if (actualGame != null && actualGame.getPlayerInTurn().equals(actualGame.getOwnerPlayer())) {
+            throw new NotYourTurnException();
+        }
+
+        SalvoResultDTO salvoResultDTO = fireShotsOnGameboard(salvoDTO, gameBoardRepoService.getOwnerGameBoardByGame(gameId));
+        actualGame.setPlayerInTurn(actualGame.getOwnerPlayer());
+        gameRepoService.saveOrUpdate(actualGame);
         return salvoResultDTO;
     }
 
-    private SalvoResultDTO checkForHits(SalvoDTO salvoDTO, List<GameBoardPosition> playerGameBoard) throws ShotOutOfBoardException {
+    private SalvoResultDTO fireShotsOnGameboard(SalvoDTO salvoDTO, List<GameBoardPosition> playerGameBoard) throws ShotOutOfBoardException {
 
         Map<ShotDTO, ShotResult> shotResults = new HashMap<>();
         List<GameBoardPosition> updatedPositions = new ArrayList<>();
@@ -101,11 +109,11 @@ public class GameServiceImpl implements GameService {
 
         if (gameStatus.equals(GameStatus.ACTIVE)) {
 
-            gameStatusDTO.setPlayerInTurn(getNextTurnPlayer(anyField.getPlayer(), anyField.getGame()).getUserId());
+            gameStatusDTO.setPlayerInTurn(anyField.getPlayer().getUserId());
 
         } else if (gameStatus.equals(GameStatus.FINISHED)) {
 
-            gameStatusDTO.setWinnngPlayer(getNextTurnPlayer(anyField.getPlayer(), anyField.getGame()).getUserId());
+            gameStatusDTO.setWinnngPlayer(anyField.getGame().getOpponentPlayer().getUserId());
         }
 
         salvoResultDTO.setGameStatus(gameStatusDTO);
@@ -113,14 +121,18 @@ public class GameServiceImpl implements GameService {
         return salvoResultDTO;
     }
 
-    private Player getNextTurnPlayer(Player actualPlayer, Game game) {
+/*    private Player getNextTurnPlayer(Player actualPlayer, Game game) {
 
         if (actualPlayer.equals(game.getOpponentPlayer())) {
+            game.setPlayerInTurn(game.getOwnerPlayer());
             return game.getOwnerPlayer();
-        } else {
-            return game.getOpponentPlayer();
         }
-    }
+
+        game.setPlayerInTurn(game.getOpponentPlayer());
+        gameRepoService.saveOrUpdate(game);
+        return game.getOpponentPlayer();
+
+    }*/
 
     private GameStatus checkGameStatus(List<GameBoardPosition> playerGameBoard) {
 

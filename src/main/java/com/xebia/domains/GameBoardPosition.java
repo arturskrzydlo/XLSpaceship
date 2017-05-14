@@ -21,7 +21,6 @@ public class GameBoardPosition extends AbstractDomainClass {
     private Character row;
     private Character column;
 
-    //TODO: change to hitStatus status with three states
     private HitStatus hitStatus = HitStatus.NOT_FIRED_YET;
 
     @ManyToOne
