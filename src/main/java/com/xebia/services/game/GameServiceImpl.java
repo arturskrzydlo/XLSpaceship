@@ -1,16 +1,22 @@
-package com.xebia.services;
+package com.xebia.services.game;
 
 import com.xebia.domains.Game;
 import com.xebia.domains.GameBoardPosition;
 import com.xebia.domains.Player;
 import com.xebia.domains.SpaceshipProtocol;
 import com.xebia.dto.*;
-import com.xebia.enums.*;
+import com.xebia.enums.GameStatus;
+import com.xebia.enums.HitStatus;
+import com.xebia.enums.PlayerType;
+import com.xebia.enums.SpaceshipType;
 import com.xebia.exceptions.NoSuchGameException;
 import com.xebia.exceptions.NotYourTurnException;
 import com.xebia.exceptions.ShotOutOfBoardException;
 import com.xebia.services.gameboard.GameBoard;
 import com.xebia.services.gameboard.GameBoardService;
+import com.xebia.services.reposervices.game.GameRepoService;
+import com.xebia.services.reposervices.gameboard.GameBoardRepoService;
+import com.xebia.services.reposervices.player.PlayerRepoService;
 import com.xebia.util.DTOMapperUtil;
 import com.xebia.util.OwnerUtil;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,7 +44,8 @@ public class GameServiceImpl implements GameService {
     private GameBoardRepoService gameBoardRepoService;
 
     @Override
-    public GameCreatedDTO createNewGame(PlayerDTO playerDTO) {
+    public GameCreatedDTO createNewGame(PlayerDTO playerDTO) throws NotYourTurnException {
+
 
         Game newGame = new Game();
         newGame = createGamePlayers(newGame, playerDTO);
@@ -55,37 +62,100 @@ public class GameServiceImpl implements GameService {
 
     //TODO: change gameboardposition to gameboard - to have for example method of finding field
     @Override
-    public SalvoResultDTO receiveSalvo(SalvoDTO salvoDTO, Integer gameId) throws ShotOutOfBoardException, NoSuchGameException {
+    public SalvoResultDTO receiveSalvo(SalvoDTO salvoDTO, Integer gameId) throws ShotOutOfBoardException, NoSuchGameException, NotYourTurnException {
 
         Game actualGame = gameRepoService.getById(gameId);
-        if (actualGame == null || actualGame.getStatus().equals(GameStatus.FINISHED)) {
-            throw new NoSuchGameException(gameId);
+
+        validateInput(salvoDTO, actualGame);
+        SalvoResultDTO salvoResultDTO = fireShotsOnOwnerGameboard(salvoDTO, gameBoardRepoService.getOwnerGameBoardByGame(gameId));
+        actualGame.setPlayerInTurn(actualGame.getOwnerPlayer());
+        gameRepoService.saveOrUpdate(actualGame);
+        return salvoResultDTO;
+    }
+
+
+    //TODO: add winner column to game table
+    @Override
+    public void updateGameWithSalvoResult(SalvoResultDTO salvoResultDTO, Integer gameId) {
+        Game game = gameRepoService.getById(gameId);
+
+        fireShotsOnOpponentGameboard(salvoResultDTO, gameBoardRepoService.getOpponentPlayerByGame(gameId, game.getOpponentPlayer().getId()));
+        if (salvoResultDTO.getGameStatus().getPlayerInTurn() == null) {
+            game.setStatus(GameStatus.FINISHED);
+            gameRepoService.saveOrUpdate(game);
+        }
+        if (salvoResultDTO.getGameStatus().getWinningPlayer() == null) {
+            game.setPlayerInTurn(getGamePlayerByUserId(game, salvoResultDTO.getGameStatus().getWinningPlayer()));
+        }
+    }
+
+    private Player getGamePlayerByUserId(Game game, String winnngPlayer) {
+        if (game.getOpponentPlayer().getUserId().equals(winnngPlayer)) {
+            return game.getOpponentPlayer();
+        }
+
+        return game.getOwnerPlayer();
+    }
+
+    private void validateInput(SalvoDTO salvoDTO, Game actualGame) throws NoSuchGameException, NotYourTurnException {
+
+
+        if (actualGame == null) {
+            throw new NoSuchGameException(null);
+        }
+        if (actualGame.getStatus().equals(GameStatus.FINISHED)) {
+            throw new NoSuchGameException(actualGame.getId());
         }
 
         if (actualGame != null && actualGame.getPlayerInTurn().equals(actualGame.getOwnerPlayer())) {
             throw new NotYourTurnException();
         }
 
-        SalvoResultDTO salvoResultDTO = fireShotsOnGameboard(salvoDTO, gameBoardRepoService.getOwnerGameBoardByGame(gameId));
-        actualGame.setPlayerInTurn(actualGame.getOwnerPlayer());
-        gameRepoService.saveOrUpdate(actualGame);
-        return salvoResultDTO;
     }
 
-    private SalvoResultDTO fireShotsOnGameboard(SalvoDTO salvoDTO, List<GameBoardPosition> playerGameBoard) throws ShotOutOfBoardException {
 
-        Map<ShotDTO, ShotResult> shotResults = new HashMap<>();
+    //TODO: extract common parts and make one method instead of two
+    private void fireShotsOnOpponentGameboard(SalvoResultDTO salvoResultDTO, List<GameBoardPosition> playerGameBoard) {
+
+        Map<String, HitStatus> shotResults = new HashMap<>();
         List<GameBoardPosition> updatedPositions = new ArrayList<>();
 
-        salvoDTO.getListOfShots().stream().forEach(shotDTO -> {
+        salvoResultDTO.getSalvoResult().entrySet().stream().forEach(shotStringShotResultEntry -> {
 
-            String[] rowColumn = shotDTO.getField().split("x");
+            String shot = shotStringShotResultEntry.getKey();
+            HitStatus shotResult = shotStringShotResultEntry.getValue();
+
+            String[] rowColumn = shot.split("x");
             Character row = rowColumn[0].toLowerCase().charAt(0);
             Character column = rowColumn[1].toLowerCase().charAt(0);
 
             GameBoardPosition foundPosition = playerGameBoard.stream()
                     .filter(gameBoardPosition -> gameBoardPosition.getColumn().equals(column) && gameBoardPosition.getRow().equals(row))
-                    .findFirst().orElseThrow(() -> new ShotOutOfBoardException(shotDTO.getField()));
+                    .findFirst().get();
+
+            foundPosition.setHitStatus(shotResult);
+            updatedPositions.add(foundPosition);
+
+        });
+
+        gameBoardRepoService.batchSave(updatedPositions);
+    }
+
+
+    private SalvoResultDTO fireShotsOnOwnerGameboard(SalvoDTO salvoDTO, List<GameBoardPosition> playerGameBoard) throws ShotOutOfBoardException {
+
+        Map<String, HitStatus> shotResults = new HashMap<>();
+        List<GameBoardPosition> updatedPositions = new ArrayList<>();
+
+        salvoDTO.getListOfShots().stream().forEach(shotDTO -> {
+
+            String[] rowColumn = shotDTO.split("x");
+            Character row = rowColumn[0].toLowerCase().charAt(0);
+            Character column = rowColumn[1].toLowerCase().charAt(0);
+
+            GameBoardPosition foundPosition = playerGameBoard.stream()
+                    .filter(gameBoardPosition -> gameBoardPosition.getColumn().equals(column) && gameBoardPosition.getRow().equals(row))
+                    .findFirst().orElseThrow(() -> new ShotOutOfBoardException(shotDTO));
 
 
             updatedPositions.add(foundPosition);
@@ -97,7 +167,7 @@ public class GameServiceImpl implements GameService {
         return createSalvoResult(playerGameBoard, shotResults);
     }
 
-    private SalvoResultDTO createSalvoResult(List<GameBoardPosition> playerGameBoard, Map<ShotDTO, ShotResult> shotResults) {
+    private SalvoResultDTO createSalvoResult(List<GameBoardPosition> playerGameBoard, Map<String, HitStatus> shotResults) {
 
         SalvoResultDTO salvoResultDTO = new SalvoResultDTO();
         salvoResultDTO.setSalvoResult(shotResults);
@@ -113,7 +183,7 @@ public class GameServiceImpl implements GameService {
 
         } else if (gameStatus.equals(GameStatus.FINISHED)) {
 
-            gameStatusDTO.setWinnngPlayer(anyField.getGame().getOpponentPlayer().getUserId());
+            gameStatusDTO.setWinningPlayer(anyField.getGame().getOpponentPlayer().getUserId());
         }
 
         salvoResultDTO.setGameStatus(gameStatusDTO);
@@ -146,22 +216,22 @@ public class GameServiceImpl implements GameService {
         return GameStatus.ACTIVE;
     }
 
-    private ShotResult changeOwnerGameBoardPositionStatusAfterShot(GameBoardPosition gameBoardPosition, List<GameBoardPosition> playerGameBoard) {
+    private HitStatus changeOwnerGameBoardPositionStatusAfterShot(GameBoardPosition gameBoardPosition, List<GameBoardPosition> playerGameBoard) {
 
         if (gameBoardPosition.getSpaceship() != null) {
 
             if (gameBoardPosition.getHitStatus().equals(HitStatus.HIT)) {
-                return ShotResult.MISS;
+                return HitStatus.MISS;
             }
             gameBoardPosition.setHitStatus(HitStatus.HIT);
             if (isSpaceshipDestroyed(playerGameBoard, gameBoardPosition.getSpaceship().getType())) {
                 gameBoardPosition.getSpaceship().setAlive(false);
-                return ShotResult.KILL;
+                return HitStatus.KILL;
             }
-            return ShotResult.HIT;
+            return HitStatus.HIT;
         } else {
             gameBoardPosition.setHitStatus(HitStatus.MISS);
-            return ShotResult.MISS;
+            return HitStatus.MISS;
         }
     }
 

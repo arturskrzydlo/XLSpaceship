@@ -1,8 +1,7 @@
-package com.xebia.services.reposervices;
+package com.xebia.services.reposervices.spaceship;
 
 import com.xebia.domains.Spaceship;
 import com.xebia.repositories.SpaceshipRepository;
-import com.xebia.services.SpaceshipRepoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

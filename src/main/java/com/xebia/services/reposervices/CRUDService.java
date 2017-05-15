@@ -1,4 +1,4 @@
-package com.xebia.services;
+package com.xebia.services.reposervices;
 
 /**
  * Created by artur.skrzydlo on 2017-05-11.

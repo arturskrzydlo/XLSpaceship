@@ -2,6 +2,7 @@ package com.xebia.services;
 
 import com.xebia.services.gameboard.GameBoard;
 import com.xebia.services.gameboard.GameBoardServiceImpl;
+import com.xebia.services.reposervices.gameboard.GameBoardRepoService;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;

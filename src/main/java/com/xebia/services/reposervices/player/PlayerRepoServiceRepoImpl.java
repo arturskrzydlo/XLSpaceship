@@ -1,10 +1,9 @@
-package com.xebia.services.reposervices;
+package com.xebia.services.reposervices.player;
 
 import com.xebia.domains.Player;
 import com.xebia.dto.PlayerDTO;
 import com.xebia.enums.PlayerType;
 import com.xebia.repositories.PlayerRepository;
-import com.xebia.services.PlayerRepoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

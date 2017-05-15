@@ -2,26 +2,34 @@ package com.xebia.controllers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.xebia.config.TestConfiguration;
-import com.xebia.dto.GameCreatedDTO;
-import com.xebia.dto.PlayerDTO;
-import com.xebia.dto.SpaceshipProtocolDTO;
-import com.xebia.services.GameService;
+import com.xebia.dto.*;
+import com.xebia.enums.HitStatus;
+import com.xebia.exceptions.IncorretSalvoShotsAmountException;
+import com.xebia.exceptions.NoSuchGameException;
+import com.xebia.exceptions.NotYourTurnException;
+import com.xebia.exceptions.ShotOutOfBoardException;
+import com.xebia.services.game.GameService;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Random;
+
+import static org.junit.Assert.*;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -42,6 +50,10 @@ public class ProtocolControllerTest {
 
     @Autowired
     private ObjectMapper mapper;
+
+    private SalvoResultDTO salvoResultDTO;
+
+    private SalvoDTO salvoDTO;
 
     @Before
     public void setup() {
@@ -85,5 +97,121 @@ public class ProtocolControllerTest {
         assertEquals(dtoArgumentCaptor.getValue().getSpaceshipProtocol().getPort(), playerDTO.getSpaceshipProtocol().getPort());
         assertEquals(dtoArgumentCaptor.getValue().getUserId(), playerDTO.getUserId());
 
+    }
+
+    @Test
+    public void testReceiveSalvo() throws Exception {
+
+        Integer gameId = 1;
+        initializeSalvo();
+        initializeSalvoResult(false, salvoDTO);
+
+        Mockito.when(gameService.receiveSalvo(Matchers.any(SalvoDTO.class), Matchers.anyInt())).thenReturn(salvoResultDTO);
+
+        mockMvc.perform(put("/xl-spaceship/protocol/game/" + gameId)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(mapper.writeValueAsString(salvoDTO)))
+                .andExpect(status().isOk());
+
+        ArgumentCaptor<SalvoDTO> dtoArgumentCaptor = ArgumentCaptor.forClass(SalvoDTO.class);
+        verify(gameService, times(1)).receiveSalvo(dtoArgumentCaptor.capture(), Matchers.anyInt());
+
+        assertEquals(dtoArgumentCaptor.getValue().getListOfShots().size(), salvoDTO.getListOfShots().size());
+        assertTrue(dtoArgumentCaptor.getValue().getListOfShots().containsAll(salvoDTO.getListOfShots()));
+    }
+
+    @Test
+    public void testReceiveSalvoWithIncorrectNumberOfShots() throws Exception {
+        Integer gameId = 1;
+        initializeSalvo();
+
+        IncorretSalvoShotsAmountException incorretSalvoShotsAmountException = new IncorretSalvoShotsAmountException(5, 2);
+        Mockito.when(gameService.receiveSalvo(Matchers.any(SalvoDTO.class), Matchers.anyInt())).thenThrow(incorretSalvoShotsAmountException);
+
+        mockMvc.perform(put("/xl-spaceship/protocol/game/" + gameId)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(mapper.writeValueAsString(salvoDTO)))
+                .andExpect(status().isUnprocessableEntity())
+                .andExpect(jsonPath("$.errorCode").value(HttpStatus.UNPROCESSABLE_ENTITY.value()))
+                .andExpect(jsonPath("$.message").value(incorretSalvoShotsAmountException.getMessage()));
+    }
+
+
+    @Test
+    public void testReceiveSalvoWithShotOutsideGameBoard() throws Exception {
+        Integer gameId = 1;
+        initializeSalvo();
+
+        ShotOutOfBoardException shotOutOfBoardException = new ShotOutOfBoardException("-1x0");
+        Mockito.when(gameService.receiveSalvo(Matchers.any(SalvoDTO.class), Matchers.anyInt())).thenThrow(shotOutOfBoardException);
+
+        mockMvc.perform(put("/xl-spaceship/protocol/game/" + gameId)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(mapper.writeValueAsString(salvoDTO)))
+                .andExpect(status().isUnprocessableEntity())
+                .andExpect(jsonPath("$.errorCode").value(HttpStatus.UNPROCESSABLE_ENTITY.value()))
+                .andExpect(jsonPath("$.message").value(shotOutOfBoardException.getMessage()));
+    }
+
+    @Test
+    public void testReceiveSalvoInYourTurn() throws Exception {
+        Integer gameId = 1;
+        initializeSalvo();
+
+        NotYourTurnException notYourTurnException = new NotYourTurnException();
+        Mockito.when(gameService.receiveSalvo(Matchers.any(SalvoDTO.class), Matchers.anyInt())).thenThrow(notYourTurnException);
+
+        mockMvc.perform(put("/xl-spaceship/protocol/game/" + gameId)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(mapper.writeValueAsString(salvoDTO)))
+                .andExpect(status().isUnprocessableEntity())
+                .andExpect(jsonPath("$.errorCode").value(HttpStatus.UNPROCESSABLE_ENTITY.value()))
+                .andExpect(jsonPath("$.message").value(notYourTurnException.getMessage()));
+    }
+
+    @Test
+    public void testReceiveSalvoWithWrongGameId() throws Exception {
+        Integer gameId = 1;
+        initializeSalvo();
+
+        NoSuchGameException noSuchGameException = new NoSuchGameException(gameId);
+        Mockito.when(gameService.receiveSalvo(Matchers.any(SalvoDTO.class), Matchers.anyInt())).thenThrow(noSuchGameException);
+
+        mockMvc.perform(put("/xl-spaceship/protocol/game/" + gameId)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(mapper.writeValueAsString(salvoDTO)))
+                .andExpect(status().isUnprocessableEntity())
+                .andExpect(jsonPath("$.errorCode").value(HttpStatus.UNPROCESSABLE_ENTITY.value()))
+                .andExpect(jsonPath("$.message").value(noSuchGameException.getMessage()));
+    }
+
+    private void initializeSalvo() {
+        salvoDTO = new SalvoDTO();
+        salvoDTO.setListOfShots(new ArrayList<>());
+        salvoDTO.getListOfShots().add("0x0");
+        salvoDTO.getListOfShots().add("Bx7");
+        salvoDTO.getListOfShots().add("Bx0");
+        salvoDTO.getListOfShots().add("AxF");
+        salvoDTO.getListOfShots().add("9x2");
+    }
+
+    private void initializeSalvoResult(boolean winningSalvo, SalvoDTO salvoDTO) {
+
+        salvoResultDTO = new SalvoResultDTO();
+        salvoResultDTO.setSalvoResult(new HashMap<>());
+        salvoDTO.getListOfShots().stream().forEach(salvo -> {
+            Random random = new Random();
+            salvoResultDTO.getSalvoResult().put(salvo, random.nextBoolean() ? HitStatus.HIT : HitStatus.MISS);
+        });
+
+
+        GameStatusDTO gameStatusDTO = new GameStatusDTO();
+
+        if (winningSalvo) {
+            gameStatusDTO.setWinningPlayer("winning_player");
+        } else {
+            gameStatusDTO.setPlayerInTurn("testPlayer");
+        }
+        salvoResultDTO.setGameStatus(gameStatusDTO);
     }
 }

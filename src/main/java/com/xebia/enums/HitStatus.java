@@ -7,5 +7,6 @@ public enum HitStatus {
 
     HIT,
     MISS,
+    KILL,
     NOT_FIRED_YET
 }

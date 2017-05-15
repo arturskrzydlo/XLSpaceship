@@ -2,12 +2,19 @@ package com.xebia.services;
 
 import com.xebia.domains.Game;
 import com.xebia.domains.GameBoardPosition;
-import com.xebia.dto.GameCreatedDTO;
-import com.xebia.dto.PlayerDTO;
-import com.xebia.dto.SpaceshipProtocolDTO;
+import com.xebia.domains.Spaceship;
+import com.xebia.dto.*;
 import com.xebia.enums.GameStatus;
+import com.xebia.enums.HitStatus;
+import com.xebia.enums.SpaceshipType;
+import com.xebia.exceptions.NoSuchGameException;
+import com.xebia.exceptions.NotYourTurnException;
+import com.xebia.services.game.GameServiceImpl;
 import com.xebia.services.gameboard.GameBoard;
 import com.xebia.services.gameboard.GameBoardService;
+import com.xebia.services.reposervices.game.GameRepoService;
+import com.xebia.services.reposervices.gameboard.GameBoardRepoService;
+import com.xebia.services.reposervices.player.PlayerRepoService;
 import com.xebia.util.DTOMapperUtil;
 import com.xebia.util.OwnerUtil;
 import org.junit.Assert;
@@ -18,6 +25,8 @@ import org.mockito.*;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import java.util.ArrayList;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Created by artur.skrzydlo on 2017-05-13.
@@ -49,7 +58,7 @@ public class GameServiceImplTest {
     }
 
     @Test
-    public void newGameHasBeenCreated() {
+    public void newGameHasBeenCreated() throws NotYourTurnException {
 
         PlayerDTO playerDTO = new PlayerDTO();
         playerDTO.setUserId("xebialabs-1");
@@ -86,7 +95,7 @@ public class GameServiceImplTest {
     }
 
     @Test
-    public void playersHasBeanCreatedIfTheyDontExists() {
+    public void playersHasBeanCreatedIfTheyDontExists() throws NotYourTurnException {
 
         PlayerDTO opponentPlayer = new PlayerDTO();
         opponentPlayer.setUserId("xebialabs-1");
@@ -123,7 +132,7 @@ public class GameServiceImplTest {
     }
 
     @Test
-    public void playersHasBeanRetrievedIfTheyExists() {
+    public void playersHasBeanRetrievedIfTheyExists() throws NotYourTurnException {
 
         Game newGame = createSampleGame();
         newGame.getOwnerPlayer().setId(1);
@@ -151,6 +160,106 @@ public class GameServiceImplTest {
 
         Assert.assertEquals(argumentGame.getOwnerPlayer().getId(), newGame.getOwnerPlayer().getId());
         Assert.assertEquals(argumentGame.getOpponentPlayer().getId(), newGame.getOpponentPlayer().getId());
+    }
+
+    @Test(expected = NoSuchGameException.class)
+    public void receiveSalvoWithNotActualGame() throws NoSuchGameException, NotYourTurnException {
+
+        Game newGame = createSampleGame();
+        newGame.getOwnerPlayer().setId(1);
+        newGame.getOpponentPlayer().setId(2);
+
+        Mockito.when(gameRepoService.getById(newGame.getId())).thenReturn(null);
+
+        gameService.receiveSalvo(new SalvoDTO(), newGame.getId());
+        Mockito.verify(gameRepoService, Mockito.times(1)).getById(newGame.getId());
+
+    }
+
+    @Test(expected = NotYourTurnException.class)
+    public void receiveSalvoInYourTurn() throws NoSuchGameException, NotYourTurnException {
+
+        Game newGame = createSampleGame();
+        newGame.getOwnerPlayer().setId(1);
+        newGame.getOpponentPlayer().setId(2);
+        newGame.setStatus(GameStatus.ACTIVE);
+        newGame.setPlayerInTurn(newGame.getOwnerPlayer());
+
+        Mockito.when(gameRepoService.getById(newGame.getId())).thenReturn(newGame);
+
+        gameService.receiveSalvo(new SalvoDTO(), newGame.getId());
+
+        Mockito.verify(gameRepoService, Mockito.times(1)).getById(newGame.getId());
+
+    }
+
+    @Test
+    public void playerInTurnHasToOwnerChangedAfterSalvoReceive() throws NoSuchGameException, NotYourTurnException {
+
+        Game newGame = createSampleGame();
+        newGame.getOwnerPlayer().setId(1);
+        newGame.getOpponentPlayer().setId(2);
+        newGame.setStatus(GameStatus.ACTIVE);
+        newGame.setPlayerInTurn(newGame.getOpponentPlayer());
+
+        SalvoDTO salvoDTO = new SalvoDTO();
+        salvoDTO.setListOfShots(Stream.of("0x0").collect(Collectors.toList()));
+
+        GameBoard gameBoard = new GameBoard();
+        gameBoard.getFieldsCollection().stream().forEach(gameBoardPosition -> {
+            gameBoardPosition.setGame(newGame);
+            gameBoardPosition.setPlayer(newGame.getOwnerPlayer());
+        });
+        gameBoard.placeSpaceshipsOnTheBoard();
+
+        Mockito.when(gameRepoService.getById(newGame.getId())).thenReturn(newGame);
+        Mockito.when(gameBoardRepoService.getOwnerGameBoardByGame(newGame.getId())).thenReturn(gameBoard.getFieldsCollection());
+
+        SalvoResultDTO salvoResultDTO = gameService.receiveSalvo(salvoDTO, newGame.getId());
+
+        Mockito.verify(gameRepoService, Mockito.times(1)).getById(newGame.getId());
+
+        Assert.assertNull(salvoResultDTO.getGameStatus().getWinningPlayer());
+        Assert.assertNotNull(salvoResultDTO.getGameStatus().getPlayerInTurn());
+        Assert.assertEquals(salvoResultDTO.getGameStatus().getPlayerInTurn(), newGame.getOwnerPlayer().getUserId());
+    }
+
+    @Test
+    public void testSalvoHasBeenReflectedOnGameBoard() throws NoSuchGameException, NotYourTurnException {
+
+        Game newGame = createSampleGame();
+        newGame.getOwnerPlayer().setId(1);
+        newGame.getOpponentPlayer().setId(2);
+        newGame.setStatus(GameStatus.ACTIVE);
+        newGame.setPlayerInTurn(newGame.getOpponentPlayer());
+
+        SalvoDTO salvoDTO = new SalvoDTO();
+        String hitShot = "2xB";
+        salvoDTO.setListOfShots(Stream.of("0x0", hitShot, "AxF", "9x0", "2x3").collect(Collectors.toList()));
+
+        GameBoard gameBoard = new GameBoard();
+        gameBoard.getFieldsCollection().stream().forEach(gameBoardPosition -> {
+            gameBoardPosition.setGame(newGame);
+            gameBoardPosition.setPlayer(newGame.getOwnerPlayer());
+
+            String[] rowsColumns = hitShot.split("x");
+
+            if (gameBoardPosition.getColumn().equals(rowsColumns[1].toLowerCase().charAt(0)) && gameBoardPosition.getRow().equals(rowsColumns[0].toLowerCase().charAt(0))) {
+                gameBoardPosition.setSpaceship(new Spaceship(SpaceshipType.ANGLE));
+            }
+        });
+
+        gameBoard.placeSpaceshipsOnTheBoard();
+
+        Mockito.when(gameRepoService.getById(newGame.getId())).thenReturn(newGame);
+        Mockito.when(gameBoardRepoService.getOwnerGameBoardByGame(newGame.getId())).thenReturn(gameBoard.getFieldsCollection());
+
+        SalvoResultDTO salvoResultDTO = gameService.receiveSalvo(salvoDTO, newGame.getId());
+
+        Mockito.verify(gameRepoService, Mockito.times(1)).getById(newGame.getId());
+
+        Assert.assertEquals(salvoResultDTO.getSalvoResult().get(hitShot), HitStatus.HIT);
+
     }
 
 

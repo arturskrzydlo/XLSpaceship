@@ -1,8 +1,7 @@
-package com.xebia.services.reposervices;
+package com.xebia.services.reposervices.game;
 
 import com.xebia.domains.Game;
 import com.xebia.repositories.GameRepository;
-import com.xebia.services.GameRepoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

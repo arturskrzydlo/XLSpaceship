@@ -22,5 +22,5 @@ public class GameStatusDTO {
     String playerInTurn;
 
     @JsonProperty("won")
-    String winnngPlayer;
+    String winningPlayer;
 }

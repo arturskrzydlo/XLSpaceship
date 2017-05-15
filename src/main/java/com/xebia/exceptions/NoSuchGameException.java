@@ -5,7 +5,7 @@ import java.text.MessageFormat;
 /**
  * Created by artur.skrzydlo on 2017-05-14.
  */
-public class NoSuchGameException extends RuntimeException {
+public class NoSuchGameException extends Exception {
 
     private static final String MESSAGE_GAME_WITH_ID = "Game with id={0} has finished or doesn't exists";
     private static final String MESSAGE_UNDEFINED_GAME = "Game does not exists !";

@@ -1,6 +1,7 @@
-package com.xebia.services;
+package com.xebia.services.reposervices.gameboard;
 
 import com.xebia.domains.GameBoardPosition;
+import com.xebia.services.reposervices.CRUDService;
 
 import java.util.List;
 

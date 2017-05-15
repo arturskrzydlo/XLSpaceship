@@ -1,9 +1,8 @@
-package com.xebia.services.reposervices;
+package com.xebia.services.reposervices.gameboard;
 
 import com.xebia.domains.GameBoardPosition;
 import com.xebia.enums.PlayerType;
 import com.xebia.repositories.GameBoardPositionRepository;
-import com.xebia.services.GameBoardRepoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -60,4 +59,5 @@ public class GameBoardPositionRepoServiceRepoImpl implements GameBoardRepoServic
     public List<GameBoardPosition> getOpponentPlayerByGame(Integer gameId, Integer playerId) {
         return gameBoardPositionRepository.findByGameIdAndPlayerId(gameId, playerId);
     }
+
 }

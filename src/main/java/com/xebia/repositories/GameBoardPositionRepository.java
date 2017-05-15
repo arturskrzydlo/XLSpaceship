@@ -14,5 +14,5 @@ public interface GameBoardPositionRepository extends CrudRepository<GameBoardPos
     List<GameBoardPosition> findByGameIdAndPlayerPlayerType(Integer gameId, PlayerType playerType);
 
     List<GameBoardPosition> findByGameIdAndPlayerId(Integer gameId, Integer playerId);
-  /*  Integer countByGameIdAndPlayerIdAndSpaceshipType(Integer gameId, Integer playerId, SpaceshipType spaceshipType);*/
+
 }

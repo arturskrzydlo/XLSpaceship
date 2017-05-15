@@ -1,6 +1,6 @@
 package com.xebia.services.gameboard;
 
-import com.xebia.services.GameBoardRepoService;
+import com.xebia.services.reposervices.gameboard.GameBoardRepoService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
