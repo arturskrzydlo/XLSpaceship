@@ -15,6 +15,9 @@ public class NoSuchGameException extends Exception {
         this.gameId = game;
     }
 
+    public NoSuchGameException() {
+    }
+
     @Override
     public String getMessage() {
 

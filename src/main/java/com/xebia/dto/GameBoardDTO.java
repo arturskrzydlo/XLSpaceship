@@ -6,21 +6,19 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.List;
+
 /**
  * Created by artur.skrzydlo on 2017-05-15.
  */
-
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class GameStatusDTO {
+public class GameBoardDTO {
 
-    @JsonProperty("self")
-    private GameBoardDTO selfGameBoard;
-    @JsonProperty("opponent")
-    private GameBoardDTO opponentGameBoard;
-    @JsonProperty("game")
-    private GamePropertiesDTO gamePropertiesDTO;
-
+    @JsonProperty("user_id")
+    private String userId;
+    @JsonProperty("board")
+    private List<String> gameBoardRows;
 }

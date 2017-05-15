@@ -2,11 +2,10 @@ package com.xebia.controllers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.xebia.config.TestConfiguration;
-import com.xebia.dto.GameStatusDTO;
-import com.xebia.dto.SalvoDTO;
-import com.xebia.dto.SalvoResultDTO;
+import com.xebia.dto.*;
 import com.xebia.enums.HitStatus;
 import com.xebia.services.game.GameServiceClient;
+import com.xebia.services.gameboard.GameBoard;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -16,18 +15,20 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Random;
 
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.hasValue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -114,6 +115,64 @@ public class UserControllerTest {
 
     }
 
+    @Test
+    public void testGetGameStatus() throws Exception {
+
+        Integer gameId = 1;
+        GameStatusDTO gameStatusDTO = createGameStatusDTO();
+
+        when(gameServiceClient.getGameStatus(gameId)).thenReturn(gameStatusDTO);
+
+        MvcResult result = mockMvc.perform(get("/xl-spaceship/user/game/" + gameId))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.*").value(hasSize(3)))
+                .andExpect(jsonPath("$.self.user_id").value(gameStatusDTO.getSelfGameBoard().getUserId()))
+                .andExpect(jsonPath("$.self.board.*").value(hasSize(GameBoard.BOARD_SIZE)))
+                .andExpect(jsonPath("$.opponent.user_id").value(gameStatusDTO.getOpponentGameBoard().getUserId()))
+                .andExpect(jsonPath("$.opponent.board.*").value(hasSize(GameBoard.BOARD_SIZE)))
+                .andExpect(jsonPath("$.game.player_turn").exists())
+                .andReturn();
+
+        result.getResponse().getContentAsString();
+
+        verify(gameServiceClient, times(1)).getGameStatus(gameId);
+    }
+
+    private GameStatusDTO createGameStatusDTO() {
+
+        String opponentId = "xebialabs-1";
+        String ownerId = "player-1";
+
+        GameStatusDTO gameStatusDTO = new GameStatusDTO();
+        GamePropertiesDTO gamePropertiesDTO = new GamePropertiesDTO();
+        gamePropertiesDTO.setPlayerInTurn(ownerId);
+        gameStatusDTO.setGamePropertiesDTO(new GamePropertiesDTO());
+
+        GameBoardDTO ownerGameBoard = new GameBoardDTO();
+        GameBoardDTO opponentGameBoard = new GameBoardDTO();
+        List<String> gameBoardRows = new ArrayList<>();
+        StringBuilder gameBoardBuilder = new StringBuilder();
+
+        for (int index = 0; index < GameBoard.BOARD_SIZE * GameBoard.BOARD_SIZE; index++) {
+            gameBoardBuilder.append(".");
+            if (((index + 1) % GameBoard.BOARD_SIZE) == 0) {
+                gameBoardRows.add(gameBoardBuilder.toString());
+                gameBoardBuilder = new StringBuilder();
+            }
+        }
+
+        ownerGameBoard.setGameBoardRows(gameBoardRows);
+        ownerGameBoard.setUserId(ownerId);
+        opponentGameBoard.setGameBoardRows(gameBoardRows);
+        opponentGameBoard.setUserId(opponentId);
+
+        gameStatusDTO.setOpponentGameBoard(opponentGameBoard);
+        gameStatusDTO.setSelfGameBoard(ownerGameBoard);
+        gameStatusDTO.setGamePropertiesDTO(gamePropertiesDTO);
+
+        return gameStatusDTO;
+    }
+
     private void initializeSalvo() {
         salvoDTO = new SalvoDTO();
         salvoDTO.setListOfShots(new ArrayList<>());
@@ -134,13 +193,13 @@ public class UserControllerTest {
         });
 
 
-        GameStatusDTO gameStatusDTO = new GameStatusDTO();
+        GamePropertiesDTO gamePropertiesDTO = new GamePropertiesDTO();
 
         if (winningSalvo) {
-            gameStatusDTO.setWinningPlayer("winning_player");
+            gamePropertiesDTO.setWinningPlayer("winning_player");
         } else {
-            gameStatusDTO.setPlayerInTurn("testPlayer");
+            gamePropertiesDTO.setPlayerInTurn("testPlayer");
         }
-        salvoResultDTO.setGameStatus(gameStatusDTO);
+        salvoResultDTO.setGameStatus(gamePropertiesDTO);
     }
 }

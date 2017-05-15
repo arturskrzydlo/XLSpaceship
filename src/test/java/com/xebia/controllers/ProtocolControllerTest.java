@@ -205,13 +205,13 @@ public class ProtocolControllerTest {
         });
 
 
-        GameStatusDTO gameStatusDTO = new GameStatusDTO();
+        GamePropertiesDTO gamePropertiesDTO = new GamePropertiesDTO();
 
         if (winningSalvo) {
-            gameStatusDTO.setWinningPlayer("winning_player");
+            gamePropertiesDTO.setWinningPlayer("winning_player");
         } else {
-            gameStatusDTO.setPlayerInTurn("testPlayer");
+            gamePropertiesDTO.setPlayerInTurn("testPlayer");
         }
-        salvoResultDTO.setGameStatus(gameStatusDTO);
+        salvoResultDTO.setGameStatus(gamePropertiesDTO);
     }
 }

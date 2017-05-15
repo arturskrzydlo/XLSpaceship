@@ -1,11 +1,16 @@
 package com.xebia.services;
 
 import com.xebia.domains.Game;
+import com.xebia.domains.Player;
 import com.xebia.domains.Spaceship;
+import com.xebia.dto.GameStatusDTO;
 import com.xebia.dto.SalvoDTO;
 import com.xebia.dto.SalvoResultDTO;
+import com.xebia.enums.GameStatus;
+import com.xebia.enums.PlayerType;
 import com.xebia.enums.SpaceshipType;
 import com.xebia.exceptions.IncorretSalvoShotsAmountException;
+import com.xebia.exceptions.NoSuchGameException;
 import com.xebia.services.game.GameService;
 import com.xebia.services.game.GameServiceClientImpl;
 import com.xebia.services.gameboard.GameBoard;
@@ -21,9 +26,10 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static org.junit.Assert.*;
-import static org.mockito.Matchers.*;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyInt;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.*;
 
 /**
  * Created by artur.skrzydlo on 2017-05-15.
@@ -104,8 +110,64 @@ public class GameServiceClientImplTest {
 
         assertEquals(httpStatusArgumentCaptor.getValue(), HttpMethod.PUT);
 
+    }
+
+    @Test(expected = NoSuchGameException.class)
+    public void getGameStatusOfNotExistingGame() throws NoSuchGameException {
+
+        when(gameRepoService.getById(1)).thenReturn(null);
+        gameServiceClient.getGameStatus(1);
 
     }
+
+    @Test
+    public void gameStatusHasBeenCreated() throws NoSuchGameException {
+
+        Game actualGame = new Game();
+        actualGame.setId(1);
+        actualGame.setStatus(GameStatus.ACTIVE);
+
+        Player owner = new Player();
+        owner.setId(1);
+        owner.setUserId("player-1");
+        owner.setPlayerType(PlayerType.OWNER);
+
+        Player opponent = new Player();
+        opponent.setId(2);
+        opponent.setUserId("xebialabs-1");
+        opponent.setPlayerType(PlayerType.OPPONENT);
+
+        actualGame.setOpponentPlayer(opponent);
+        actualGame.setOwnerPlayer(owner);
+        actualGame.setPlayerInTurn(opponent);
+
+        GameBoard ownerGameBoard = new GameBoard();
+        ownerGameBoard.getFieldsCollection().stream().forEach(gameBoardPosition -> gameBoardPosition.setPlayer(owner));
+
+        GameBoard opponentGameBoard = new GameBoard();
+        opponentGameBoard.getFieldsCollection().stream().forEach(gameBoardPosition -> gameBoardPosition.setPlayer(opponent));
+
+        when(gameRepoService.getById(actualGame.getId())).thenReturn(actualGame);
+        when(gameBoardRepoService.getOwnerGameBoardByGame(actualGame.getId())).thenReturn(ownerGameBoard.getFieldsCollection());
+        when(gameBoardRepoService.getOpponentPlayerByGame(actualGame.getId(), opponent.getId())).thenReturn(opponentGameBoard.getFieldsCollection());
+
+        GameStatusDTO gameStatusDTO = gameServiceClient.getGameStatus(actualGame.getId());
+
+        verify(gameRepoService, times(1)).getById(actualGame.getId());
+        verify(gameBoardRepoService, times(1)).getOwnerGameBoardByGame(actualGame.getId());
+        verify(gameBoardRepoService, times(1)).getOpponentPlayerByGame(actualGame.getId(), opponent.getId());
+
+        assertTrue(gameStatusDTO.getOpponentGameBoard() != null);
+        assertTrue(gameStatusDTO.getSelfGameBoard() != null);
+        assertTrue(gameStatusDTO.getOpponentGameBoard().getGameBoardRows().size() == GameBoard.BOARD_SIZE);
+        assertTrue(gameStatusDTO.getSelfGameBoard().getGameBoardRows().size() == GameBoard.BOARD_SIZE);
+        assertEquals(gameStatusDTO.getSelfGameBoard().getUserId(), owner.getUserId());
+        assertEquals(gameStatusDTO.getOpponentGameBoard().getUserId(), opponent.getUserId());
+        assertTrue(gameStatusDTO.getGamePropertiesDTO().getPlayerInTurn() != null);
+        assertTrue(gameStatusDTO.getGamePropertiesDTO().getWinningPlayer() == null);
+
+    }
+
 
 
 }

@@ -24,7 +24,7 @@ public class SalvoResultDTO {
     @JsonProperty("salvo")
     private Map<String, HitStatus> salvoResult;
     @JsonProperty("game")
-    private GameStatusDTO gameStatus;
+    private GamePropertiesDTO gameStatus;
 
     @JsonAnySetter
     public void add(String key, HitStatus value) {

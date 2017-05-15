@@ -172,21 +172,21 @@ public class GameServiceImpl implements GameService {
         SalvoResultDTO salvoResultDTO = new SalvoResultDTO();
         salvoResultDTO.setSalvoResult(shotResults);
 
-        GameStatusDTO gameStatusDTO = new GameStatusDTO();
+        GamePropertiesDTO gamePropertiesDTO = new GamePropertiesDTO();
         GameStatus gameStatus = checkGameStatus(playerGameBoard);
 
         GameBoardPosition anyField = playerGameBoard.get(0);
 
         if (gameStatus.equals(GameStatus.ACTIVE)) {
 
-            gameStatusDTO.setPlayerInTurn(anyField.getPlayer().getUserId());
+            gamePropertiesDTO.setPlayerInTurn(anyField.getPlayer().getUserId());
 
         } else if (gameStatus.equals(GameStatus.FINISHED)) {
 
-            gameStatusDTO.setWinningPlayer(anyField.getGame().getOpponentPlayer().getUserId());
+            gamePropertiesDTO.setWinningPlayer(anyField.getGame().getOpponentPlayer().getUserId());
         }
 
-        salvoResultDTO.setGameStatus(gameStatusDTO);
+        salvoResultDTO.setGameStatus(gamePropertiesDTO);
 
         return salvoResultDTO;
     }

@@ -14,7 +14,7 @@ import java.util.stream.IntStream;
 /**
  * Created by artur.skrzydlo on 2017-05-12.
  */
-//TODO: Algorithm for check if spaceship is mirrored
+//TODO: check if spaceship is mirrored
 
 public class GameBoard {
 
