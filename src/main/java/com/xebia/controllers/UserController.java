@@ -1,8 +1,7 @@
 package com.xebia.controllers;
 
-import com.xebia.dto.GameStatusDTO;
-import com.xebia.dto.SalvoDTO;
-import com.xebia.dto.SalvoResultDTO;
+import com.xebia.dto.*;
+import com.xebia.exceptions.GameHasFinishedException;
 import com.xebia.exceptions.NoSuchGameException;
 import com.xebia.services.game.GameServiceClient;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,13 +18,24 @@ public class UserController {
     private GameServiceClient gameServiceClient;
 
     @RequestMapping(value = "/game/{gameId}/fire", method = RequestMethod.PUT)
-    public SalvoResultDTO fireSalvo(@PathVariable Integer gameId, @RequestBody SalvoDTO player) {
+    public SalvoResultDTO fireSalvo(@PathVariable Integer gameId, @RequestBody SalvoDTO player) throws NoSuchGameException, GameHasFinishedException {
         return gameServiceClient.fireSalvo(gameId, player);
     }
 
     @RequestMapping(value = "/game/{gameId}", method = RequestMethod.GET)
     public GameStatusDTO getGameStatus(@PathVariable Integer gameId) throws NoSuchGameException {
         return gameServiceClient.getGameStatus(gameId);
+    }
+
+    @RequestMapping(value = "/game/new", method = RequestMethod.POST)
+    public GameCreatedDTO challengeAnotherPlayerToGame(@RequestBody PlayerDTO playerDTO) {
+        return gameServiceClient.challengePlayerForAGame(playerDTO);
+    }
+
+    @RequestMapping(value = "/game/{gameId}/auto", method = RequestMethod.POST)
+    public void turnOnAutopilot(@PathVariable Integer gameId) {
+
+
     }
 
 }

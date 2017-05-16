@@ -17,5 +17,5 @@ public interface GameService {
 
     SalvoResultDTO receiveSalvo(SalvoDTO salvoDTO, Integer gameId) throws ShotOutOfBoardException, NoSuchGameException, NotYourTurnException;
 
-    void updateGameWithSalvoResult(SalvoResultDTO salvoResultDTO, Integer gameId);
+    void updateGameAfterYourSalvo(SalvoResultDTO salvoResultDTO, Integer gameId);
 }

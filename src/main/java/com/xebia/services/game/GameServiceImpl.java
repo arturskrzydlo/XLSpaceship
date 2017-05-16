@@ -66,9 +66,17 @@ public class GameServiceImpl implements GameService {
 
         Game actualGame = gameRepoService.getById(gameId);
 
-        validateInput(salvoDTO, actualGame);
+        validateInput(actualGame);
         SalvoResultDTO salvoResultDTO = fireShotsOnOwnerGameboard(salvoDTO, gameBoardRepoService.getOwnerGameBoardByGame(gameId));
-        actualGame.setPlayerInTurn(actualGame.getOwnerPlayer());
+
+        if (salvoResultDTO.getGameStatus().getPlayerInTurn() == null) {
+            actualGame.setStatus(GameStatus.FINISHED);
+            actualGame.setWinningPlayer(actualGame.getOpponentPlayer());
+        } else {
+
+            actualGame.setPlayerInTurn(actualGame.getOwnerPlayer());
+        }
+
         gameRepoService.saveOrUpdate(actualGame);
         return salvoResultDTO;
     }
@@ -76,35 +84,34 @@ public class GameServiceImpl implements GameService {
 
     //TODO: add winner column to game table
     @Override
-    public void updateGameWithSalvoResult(SalvoResultDTO salvoResultDTO, Integer gameId) {
+    public void updateGameAfterYourSalvo(SalvoResultDTO salvoResultDTO, Integer gameId) {
         Game game = gameRepoService.getById(gameId);
 
         fireShotsOnOpponentGameboard(salvoResultDTO, gameBoardRepoService.getOpponentPlayerByGame(gameId, game.getOpponentPlayer().getId()));
         if (salvoResultDTO.getGameStatus().getPlayerInTurn() == null) {
             game.setStatus(GameStatus.FINISHED);
+            game.setWinningPlayer(game.getOwnerPlayer());
             gameRepoService.saveOrUpdate(game);
         }
         if (salvoResultDTO.getGameStatus().getWinningPlayer() == null) {
-            game.setPlayerInTurn(getGamePlayerByUserId(game, salvoResultDTO.getGameStatus().getWinningPlayer()));
+            game.setPlayerInTurn(getGamePlayerByUserId(game, salvoResultDTO.getGameStatus().getPlayerInTurn()));
         }
+        gameRepoService.saveOrUpdate(game);
     }
 
-    private Player getGamePlayerByUserId(Game game, String winnngPlayer) {
-        if (game.getOpponentPlayer().getUserId().equals(winnngPlayer)) {
+    private Player getGamePlayerByUserId(Game game, String playerInTurn) {
+        if (game.getOpponentPlayer().getUserId().equals(playerInTurn)) {
             return game.getOpponentPlayer();
         }
 
         return game.getOwnerPlayer();
     }
 
-    private void validateInput(SalvoDTO salvoDTO, Game actualGame) throws NoSuchGameException, NotYourTurnException {
+    private void validateInput(Game actualGame) throws NoSuchGameException, NotYourTurnException {
 
 
         if (actualGame == null) {
-            throw new NoSuchGameException(null);
-        }
-        if (actualGame.getStatus().equals(GameStatus.FINISHED)) {
-            throw new NoSuchGameException(actualGame.getId());
+            throw new NoSuchGameException();
         }
 
         if (actualGame != null && actualGame.getPlayerInTurn().equals(actualGame.getOwnerPlayer())) {
@@ -190,19 +197,6 @@ public class GameServiceImpl implements GameService {
 
         return salvoResultDTO;
     }
-
-/*    private Player getNextTurnPlayer(Player actualPlayer, Game game) {
-
-        if (actualPlayer.equals(game.getOpponentPlayer())) {
-            game.setPlayerInTurn(game.getOwnerPlayer());
-            return game.getOwnerPlayer();
-        }
-
-        game.setPlayerInTurn(game.getOpponentPlayer());
-        gameRepoService.saveOrUpdate(game);
-        return game.getOpponentPlayer();
-
-    }*/
 
     private GameStatus checkGameStatus(List<GameBoardPosition> playerGameBoard) {
 

@@ -29,7 +29,6 @@ public class ProtocolController {
         return gameService.createNewGame(player);
     }
 
-
     @RequestMapping(value = "/game/{gameId}", method = RequestMethod.PUT)
     public ResponseEntity<SalvoResultDTO> receiveSalvo(@PathVariable Integer gameId, @RequestBody SalvoDTO salvo) throws NoSuchGameException, NotYourTurnException {
         SalvoResultDTO salvoResultDTO = gameService.receiveSalvo(salvo, gameId);
@@ -37,7 +36,7 @@ public class ProtocolController {
 
     }
 
-    @ExceptionHandler(value = {ShotOutOfBoardException.class, NotYourTurnException.class, NoSuchGameException.class, IncorretSalvoShotsAmountException.class})
+    @ExceptionHandler(value = {ShotOutOfBoardException.class, NotYourTurnException.class, NoSuchGameException.class, IncorretSalvoShotsAmountException.class, GameHasFinishedException.class})
     public ResponseEntity<ErrorResponse> exceptionHandler(Exception ex) {
         ErrorResponse error = new ErrorResponse();
         error.setErrorCode(HttpStatus.UNPROCESSABLE_ENTITY.value());

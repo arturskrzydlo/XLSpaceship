@@ -1,7 +1,5 @@
 server:
   port: 8080
-resource:
-  game: http://localhost:${configured.opponent.port}/xl-spaceship/protocol/game
 
 spring:
     h2:
@@ -9,7 +7,9 @@ spring:
             enabled: true
             path: /console/
 
-configured:
-    opponent:
-        port: 8080
+player:
+    name: artur
+    fullname: artur skrzydlo
+    hostname: localhost
+    port: ${server.port}
 

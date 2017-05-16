@@ -7,7 +7,7 @@ import java.text.MessageFormat;
  */
 public class NoSuchGameException extends Exception {
 
-    private static final String MESSAGE_GAME_WITH_ID = "Game with id={0} has finished or doesn't exists";
+    private static final String MESSAGE_GAME_WITH_ID = "Game with id={0} doesn't exists";
     private static final String MESSAGE_UNDEFINED_GAME = "Game does not exists !";
     private Integer gameId;
 

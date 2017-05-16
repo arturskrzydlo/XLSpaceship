@@ -18,7 +18,7 @@ public class ClientErrorHandler implements ResponseErrorHandler {
 
     @Override
     public void handleError(ClientHttpResponse response) throws IOException {
-        String body = IOUtils.toString(response.getBody());
+        String body = IOUtils.toString(response.getBody()).replace("\"", "");
         CustomClientException exception = new CustomClientException(response.getStatusCode(), body, body);
         throw exception;
     }

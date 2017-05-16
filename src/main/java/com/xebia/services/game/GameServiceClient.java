@@ -1,8 +1,7 @@
 package com.xebia.services.game;
 
-import com.xebia.dto.GameStatusDTO;
-import com.xebia.dto.SalvoDTO;
-import com.xebia.dto.SalvoResultDTO;
+import com.xebia.dto.*;
+import com.xebia.exceptions.GameHasFinishedException;
 import com.xebia.exceptions.NoSuchGameException;
 
 /**
@@ -11,7 +10,11 @@ import com.xebia.exceptions.NoSuchGameException;
 
 public interface GameServiceClient {
 
-    SalvoResultDTO fireSalvo(Integer gameId, SalvoDTO salvo);
+    SalvoResultDTO fireSalvo(Integer gameId, SalvoDTO salvo) throws NoSuchGameException, GameHasFinishedException;
 
     GameStatusDTO getGameStatus(Integer gameId) throws NoSuchGameException;
+
+    GameCreatedDTO challengePlayerForAGame(PlayerDTO playerDTO);
+
+    void turnOnAutopilot(Integer gameId);
 }

@@ -4,10 +4,7 @@ import com.xebia.enums.GameStatus;
 import lombok.Getter;
 import lombok.Setter;
 
-import javax.persistence.CascadeType;
-import javax.persistence.Entity;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
+import javax.persistence.*;
 
 /**
  * Created by artur.skrzydlo on 2017-05-11.
@@ -17,16 +14,21 @@ import javax.persistence.ManyToOne;
 @Entity
 public class Game extends AbstractDomainClass {
 
-    @ManyToOne(cascade = CascadeType.ALL)
+
+    @ManyToOne(cascade = {CascadeType.MERGE, CascadeType.PERSIST})
     @JoinColumn(nullable = false)
     private Player ownerPlayer;
 
-    @ManyToOne(cascade = CascadeType.ALL)
+    @ManyToOne(cascade = {CascadeType.MERGE, CascadeType.PERSIST})
     private Player opponentPlayer;
 
     @ManyToOne
     private Player playerInTurn;
 
-    private GameStatus status;
+    @Column(nullable = false)
+    private GameStatus status = GameStatus.ACTIVE;
+
+    @ManyToOne
+    private Player winningPlayer;
 
 }

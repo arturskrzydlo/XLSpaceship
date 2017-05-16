@@ -2,15 +2,21 @@ package com.xebia.services.game;
 
 import com.xebia.domains.Game;
 import com.xebia.domains.GameBoardPosition;
+import com.xebia.domains.Player;
+import com.xebia.domains.SpaceshipProtocol;
 import com.xebia.dto.*;
 import com.xebia.enums.GameStatus;
+import com.xebia.enums.PlayerType;
+import com.xebia.exceptions.GameHasFinishedException;
 import com.xebia.exceptions.IncorretSalvoShotsAmountException;
 import com.xebia.exceptions.NoSuchGameException;
 import com.xebia.services.gameboard.GameBoard;
+import com.xebia.services.gameboard.GameBoardService;
 import com.xebia.services.reposervices.game.GameRepoService;
 import com.xebia.services.reposervices.gameboard.GameBoardRepoService;
+import com.xebia.util.DTOMapperUtil;
+import com.xebia.util.OwnerUtil;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -25,12 +31,9 @@ import java.util.stream.Collectors;
 @Service
 public class GameServiceClientImpl implements GameServiceClient {
 
-    @Value("${resource.game}")
-    private String resource;
+    private static final String FIRE_SALVO_RESOURCE = "/xl-spaceship/protocol/game";
 
-    @Value("${resource.game}/{gameId}")
-    private String fireSalvoResource;
-
+    private static final String CHALLENGE_PLAYER = "/xl-spaceship/protocol/game/new";
 
     @Autowired
     private RestTemplate restTemplate;
@@ -42,22 +45,28 @@ public class GameServiceClientImpl implements GameServiceClient {
     private GameRepoService gameRepoService;
 
     @Autowired
+    private GameBoardService gameBoardService;
+
+    @Autowired
     private GameBoardRepoService gameBoardRepoService;
 
     @Override
-    public SalvoResultDTO fireSalvo(Integer gameId, SalvoDTO salvo) {
+    public SalvoResultDTO fireSalvo(Integer gameId, SalvoDTO salvo) throws NoSuchGameException, GameHasFinishedException {
 
         Game actualGame = gameRepoService.getById(gameId);
-        validateNumberOfShots(salvo, actualGame);
+        validateGame(salvo, actualGame);
+        PlayerDTO opponent = DTOMapperUtil.mapPlayerToPlayerDTO(actualGame.getOpponentPlayer());
         HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.setContentType(MediaType.APPLICATION_JSON);
         HttpEntity<SalvoDTO> salvoDTOHttpEntity = new HttpEntity<>(salvo, httpHeaders);
-        ResponseEntity<SalvoResultDTO> responseEntity = restTemplate.exchange(fireSalvoResource, HttpMethod.PUT, salvoDTOHttpEntity, SalvoResultDTO.class, gameId);
+        ResponseEntity<SalvoResultDTO> responseEntity = restTemplate.exchange(buildRequestStringFromOpponentPlayer(opponent, FIRE_SALVO_RESOURCE + "/" + actualGame.getId()), HttpMethod.PUT, salvoDTOHttpEntity, SalvoResultDTO.class, gameId);
+
 
         SalvoResultDTO salvoResultDTO = responseEntity.getBody();
-        gameService.updateGameWithSalvoResult(salvoResultDTO, gameId);
+        gameService.updateGameAfterYourSalvo(salvoResultDTO, gameId);
         return salvoResultDTO;
     }
+
 
 
     @Override
@@ -67,6 +76,86 @@ public class GameServiceClientImpl implements GameServiceClient {
         validateGameExistence(actualGame);
         return createGameStatus(actualGame);
     }
+
+    //@TODO: Problem with many games- id of the game can exists already in DB - solution - choose game id randomly with big hash value ?
+    // maybe some hash based on port - address ip
+    @Override
+    public GameCreatedDTO challengePlayerForAGame(PlayerDTO playerToChallenge) {
+
+        HttpHeaders httpHeaders = new HttpHeaders();
+        httpHeaders.setContentType(MediaType.APPLICATION_JSON);
+        HttpEntity<PlayerDTO> playerDTOHttpEntity = new HttpEntity<>(OwnerUtil.getSimulationUser(), httpHeaders);
+        ResponseEntity<GameCreatedDTO> responseEntity = restTemplate.postForEntity(buildRequestStringFromOpponentPlayer(playerToChallenge, CHALLENGE_PLAYER), playerDTOHttpEntity, GameCreatedDTO.class);
+
+        GameCreatedDTO gameCreatedDTO = responseEntity.getBody();
+        Game newGame = createNewGame(gameCreatedDTO, playerToChallenge);
+        gameBoardRepoService.batchSave(createGameBoardForOwnerPlayer(newGame).getFieldsCollection());
+        gameBoardRepoService.batchSave(createGameBoardForOpponentPlayer(newGame).getFieldsCollection());
+        return gameCreatedDTO;
+    }
+
+    @Override
+    public void turnOnAutopilot(Integer gameId) {
+
+    }
+
+    private GameBoard createGameBoardForOwnerPlayer(Game newGame) {
+
+        GameBoard gameBoard = gameBoardService.createGameBoard();
+        gameBoard.getFieldsCollection().stream().forEach(gameBoardPosition -> {
+            gameBoardPosition.setPlayer(newGame.getOwnerPlayer());
+            gameBoardPosition.setGame(newGame);
+        });
+
+        return gameBoard;
+    }
+
+    private GameBoard createGameBoardForOpponentPlayer(Game newGame) {
+
+        GameBoard gameBoard = gameBoardService.createEmptyGameBoard();
+        gameBoard.getFieldsCollection().stream().forEach(gameBoardPosition -> {
+            gameBoardPosition.setPlayer(newGame.getOpponentPlayer());
+            gameBoardPosition.setGame(newGame);
+        });
+
+        return gameBoard;
+    }
+
+    private Game createNewGame(GameCreatedDTO gameCreatedDTO, PlayerDTO playerToChallenge) {
+
+        Game newGame = new Game();
+        newGame.setOwnerPlayer(DTOMapperUtil.mapPlayerDTOToPlayer(OwnerUtil.getSimulationUser()));
+        newGame.getOwnerPlayer().setPlayerType(PlayerType.OWNER);
+        Player opponent = new Player();
+        opponent.setUserId(gameCreatedDTO.getOpponentId());
+        opponent.setFullName(gameCreatedDTO.getFullName());
+        opponent.setPlayerType(PlayerType.OPPONENT);
+
+        SpaceshipProtocol spaceshipProtocol = new SpaceshipProtocol();
+        spaceshipProtocol.setPort(playerToChallenge.getSpaceshipProtocol().getPort());
+        spaceshipProtocol.setHostname(playerToChallenge.getSpaceshipProtocol().getHostname());
+        opponent.setProtocol(spaceshipProtocol);
+        newGame.setOpponentPlayer(opponent);
+
+        if (gameCreatedDTO.getStartingPlayerId().equals(newGame.getOwnerPlayer().getUserId())) {
+            newGame.setPlayerInTurn(newGame.getOwnerPlayer());
+        } else {
+            newGame.setPlayerInTurn(opponent);
+        }
+
+        newGame.setId(gameCreatedDTO.getGameId());
+        gameRepoService.saveOrUpdate(newGame);
+
+        return newGame;
+    }
+
+    private String buildRequestStringFromOpponentPlayer(PlayerDTO playerToChallenge, String requestURI) {
+
+        SpaceshipProtocolDTO protocolToContact = playerToChallenge.getSpaceshipProtocol();
+        return "http://" + protocolToContact.getHostname() + ":" + protocolToContact.getPort() + requestURI;
+
+    }
+
 
     private GameStatusDTO createGameStatus(Game actualGame) {
         List<GameBoardPosition> ownerGameBoard = gameBoardRepoService.getOwnerGameBoardByGame(actualGame.getId());
@@ -79,7 +168,12 @@ public class GameServiceClientImpl implements GameServiceClient {
         gameStatusDTO.setOpponentGameBoard(opponentGameBoardDTO);
         gameStatusDTO.setSelfGameBoard(ownerGameBoardDTO);
         GamePropertiesDTO gamePropertiesDTO = new GamePropertiesDTO();
-        gamePropertiesDTO.setPlayerInTurn(actualGame.getPlayerInTurn().getUserId());
+
+        if (actualGame.getWinningPlayer() != null) {
+            gamePropertiesDTO.setWinningPlayer(actualGame.getWinningPlayer().getUserId());
+        } else {
+            gamePropertiesDTO.setPlayerInTurn(actualGame.getPlayerInTurn().getUserId());
+        }
 
         gameStatusDTO.setGamePropertiesDTO(gamePropertiesDTO);
         return gameStatusDTO;
@@ -127,10 +221,6 @@ public class GameServiceClientImpl implements GameServiceClient {
         if (actualGame == null) {
             throw new NoSuchGameException();
         }
-
-        if (actualGame.getStatus().equals(GameStatus.FINISHED)) {
-            throw new NoSuchGameException(actualGame.getId());
-        }
     }
 
     private void validateNumberOfShots(SalvoDTO salvoDTO, Game game) {
@@ -147,11 +237,20 @@ public class GameServiceClientImpl implements GameServiceClient {
         }
     }
 
-    public String getResource() {
-        return resource;
+
+    private void validateGameStatus(Game actualGame) throws GameHasFinishedException {
+        if (actualGame.getStatus().equals(GameStatus.FINISHED)) {
+            throw new GameHasFinishedException(actualGame.getWinningPlayer().getUserId());
+        }
     }
 
-    public String getFireSalvoResource() {
-        return fireSalvoResource;
+
+    private void validateGame(SalvoDTO salvo, Game actualGame) throws NoSuchGameException, GameHasFinishedException {
+
+        if (actualGame == null) {
+            throw new NoSuchGameException();
+        }
+        validateGameStatus(actualGame);
+        validateNumberOfShots(salvo, actualGame);
     }
 }

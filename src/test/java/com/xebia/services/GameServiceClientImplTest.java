@@ -9,6 +9,7 @@ import com.xebia.dto.SalvoResultDTO;
 import com.xebia.enums.GameStatus;
 import com.xebia.enums.PlayerType;
 import com.xebia.enums.SpaceshipType;
+import com.xebia.exceptions.GameHasFinishedException;
 import com.xebia.exceptions.IncorretSalvoShotsAmountException;
 import com.xebia.exceptions.NoSuchGameException;
 import com.xebia.services.game.GameService;
@@ -77,7 +78,7 @@ public class GameServiceClientImplTest {
     }
 
     @Test
-    public void correctEntityHasBeenSendViaPutReqest() {
+    public void correctEntityHasBeenSendViaPutReqest() throws NoSuchGameException, GameHasFinishedException {
 
         Game actualGame = new Game();
         actualGame.setId(1);
@@ -90,7 +91,7 @@ public class GameServiceClientImplTest {
 
         Mockito.when(gameRepoService.getById(actualGame.getId())).thenReturn(actualGame);
         GameBoard gameBoard = new GameBoard();
-        gameBoard.getFieldsCollection().get(0).setSpaceship(new Spaceship(SpaceshipType.SCLASS));
+        gameBoard.getFieldsCollection().get(0).setSpaceship(new Spaceship(SpaceshipType.ANGLE));
         Mockito.when(gameBoardRepoService.getOwnerGameBoardByGame(actualGame.getId())).thenReturn(gameBoard.getFieldsCollection());
         ArgumentCaptor<HttpMethod> httpStatusArgumentCaptor = ArgumentCaptor.forClass(HttpMethod.class);
 
