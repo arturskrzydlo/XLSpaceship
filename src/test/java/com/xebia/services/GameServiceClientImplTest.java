@@ -3,6 +3,7 @@ package com.xebia.services;
 import com.xebia.domains.Game;
 import com.xebia.domains.Player;
 import com.xebia.domains.Spaceship;
+import com.xebia.domains.SpaceshipProtocol;
 import com.xebia.dto.GameStatusDTO;
 import com.xebia.dto.SalvoDTO;
 import com.xebia.dto.SalvoResultDTO;
@@ -88,6 +89,16 @@ public class GameServiceClientImplTest {
 
         HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.setContentType(MediaType.APPLICATION_JSON);
+
+        Player opponentPlayer = new Player();
+        opponentPlayer.setUserId("opponent");
+        opponentPlayer.setFullName("opponent");
+
+        SpaceshipProtocol spaceshipProtocol = new SpaceshipProtocol();
+        spaceshipProtocol.setHostname("127.0.0.1");
+        spaceshipProtocol.setPort(9080);
+        opponentPlayer.setProtocol(spaceshipProtocol);
+        actualGame.setOpponentPlayer(opponentPlayer);
 
         Mockito.when(gameRepoService.getById(actualGame.getId())).thenReturn(actualGame);
         GameBoard gameBoard = new GameBoard();

@@ -96,7 +96,9 @@ public class GameServiceClientImpl implements GameServiceClient {
 
     @Override
     public void turnOnAutopilot(Integer gameId) {
-
+        Game actualGame = gameRepoService.getById(gameId);
+        actualGame.getOwnerPlayer().setAutopilot(true);
+        gameRepoService.saveOrUpdate(actualGame);
     }
 
     private GameBoard createGameBoardForOwnerPlayer(Game newGame) {

@@ -5,7 +5,7 @@ package com.xebia.exceptions;
  */
 public class NotYourTurnException extends Exception {
 
-    private static final String MESSAGE = "Not your turn. Wait for opponent salvo";
+    public static final String MESSAGE = "Not your turn. Wait for opponent salvo";
 
     @Override
     public String getMessage() {

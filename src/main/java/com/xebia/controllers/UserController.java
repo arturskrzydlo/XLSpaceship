@@ -18,8 +18,8 @@ public class UserController {
     private GameServiceClient gameServiceClient;
 
     @RequestMapping(value = "/game/{gameId}/fire", method = RequestMethod.PUT)
-    public SalvoResultDTO fireSalvo(@PathVariable Integer gameId, @RequestBody SalvoDTO player) throws NoSuchGameException, GameHasFinishedException {
-        return gameServiceClient.fireSalvo(gameId, player);
+    public SalvoResultDTO fireSalvo(@PathVariable Integer gameId, @RequestBody SalvoDTO salvo) throws NoSuchGameException, GameHasFinishedException {
+        return gameServiceClient.fireSalvo(gameId, salvo);
     }
 
     @RequestMapping(value = "/game/{gameId}", method = RequestMethod.GET)
@@ -34,8 +34,7 @@ public class UserController {
 
     @RequestMapping(value = "/game/{gameId}/auto", method = RequestMethod.POST)
     public void turnOnAutopilot(@PathVariable Integer gameId) {
-
-
+        gameServiceClient.turnOnAutopilot(gameId);
     }
 
 }

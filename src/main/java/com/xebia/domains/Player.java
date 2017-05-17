@@ -22,7 +22,8 @@ public class Player extends AbstractDomainClass {
     private String fullName;
     @Column(nullable = false)
     private PlayerType playerType;
-
+    @Column(nullable = false)
+    private Boolean autopilot = false;
     @Embedded
     private SpaceshipProtocol protocol;
 

@@ -11,7 +11,6 @@ import org.springframework.stereotype.Component;
 @Component
 public class OwnerUtil {
 
-
     public static String NAME;
     public static String FULL_NAME;
     public static String HOST;

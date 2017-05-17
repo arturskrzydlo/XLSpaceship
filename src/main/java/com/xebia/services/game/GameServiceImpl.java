@@ -17,10 +17,12 @@ import com.xebia.services.gameboard.GameBoardService;
 import com.xebia.services.reposervices.game.GameRepoService;
 import com.xebia.services.reposervices.gameboard.GameBoardRepoService;
 import com.xebia.services.reposervices.player.PlayerRepoService;
+import com.xebia.thread.AutoFireResponseThread;
 import com.xebia.util.DTOMapperUtil;
 import com.xebia.util.OwnerUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
 import java.util.*;
 
@@ -42,6 +44,9 @@ public class GameServiceImpl implements GameService {
 
     @Autowired
     private GameBoardRepoService gameBoardRepoService;
+
+    @Autowired
+    private RestTemplate restTemplate;
 
     @Override
     public GameCreatedDTO createNewGame(PlayerDTO playerDTO) throws NotYourTurnException {
@@ -72,12 +77,23 @@ public class GameServiceImpl implements GameService {
         if (salvoResultDTO.getGameStatus().getPlayerInTurn() == null) {
             actualGame.setStatus(GameStatus.FINISHED);
             actualGame.setWinningPlayer(actualGame.getOpponentPlayer());
+            actualGame.getOwnerPlayer().setAutopilot(false);
         } else {
 
             actualGame.setPlayerInTurn(actualGame.getOwnerPlayer());
         }
 
         gameRepoService.saveOrUpdate(actualGame);
+        if (actualGame.getOwnerPlayer().getAutopilot()) {
+
+            AutoFireResponseThread autoFireResponseThread = new AutoFireResponseThread();
+            autoFireResponseThread.setGameId(actualGame.getId());
+            autoFireResponseThread.setOpponent(DTOMapperUtil.mapPlayerToPlayerDTO(actualGame.getOwnerPlayer()));
+            autoFireResponseThread.setOpponentPlayerGameBoard(gameBoardRepoService.getOpponentPlayerByGame(actualGame.getId(), actualGame.getOpponentPlayer().getId()));
+            autoFireResponseThread.setOwnerPlayerGameboard(gameBoardRepoService.getOwnerGameBoardByGame(gameId));
+            autoFireResponseThread.setRestTemplate(restTemplate);
+            autoFireResponseThread.start();
+        }
         return salvoResultDTO;
     }
 
@@ -91,6 +107,7 @@ public class GameServiceImpl implements GameService {
         if (salvoResultDTO.getGameStatus().getPlayerInTurn() == null) {
             game.setStatus(GameStatus.FINISHED);
             game.setWinningPlayer(game.getOwnerPlayer());
+            game.getOwnerPlayer().setAutopilot(false);
             gameRepoService.saveOrUpdate(game);
         }
         if (salvoResultDTO.getGameStatus().getWinningPlayer() == null) {
