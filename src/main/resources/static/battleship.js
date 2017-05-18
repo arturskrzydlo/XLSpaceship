@@ -126,14 +126,10 @@ function createSpaceshipProtocol() {
     var portFromInput = $("#port").val();
     var hostnameFromInput = $("#hostname").val();
 
-    if (portFromInput == port && hostnameFromInput == hostname) {
+    if (portFromInput == port && hostnameFromInput == hostnameFromInput) {
         handleError({message: "Can'n challenge yourself. Hostname and port are equal to yours"});
         return;
-    } else if (portFromInput == "" || hostnameFromInput == "") {
-        handleError({message: "Localhost and port must be provided to challenge other player and start a game"});
-        return;
     }
-
     var spaceship_protocol = {
 
         spaceship_protocol: {
