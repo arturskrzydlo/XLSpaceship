@@ -31,4 +31,5 @@ public class Game extends AbstractDomainClass {
     @ManyToOne
     private Player winningPlayer;
 
+
 }

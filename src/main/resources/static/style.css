@@ -1,0 +1,79 @@
+body {
+    margin: 60px auto;
+
+}
+
+h1 {
+    font-size: 3em;
+    font-family: 'Helvetica', 'Arial', 'Sans-Serif';
+}
+
+p, button, input {
+    font-size: 1.5em;
+    line-height: 1.4em;
+    color: #333;
+    margin-bottom: 1em;
+}
+
+.error {
+    border: 1px solid darkred;
+    height: 50px;
+    background-color: #ffbeb4;
+    color: darkred;
+    line-height: 50px;
+    vertical-align: middle;
+    display: none;
+}
+
+#gameboardsPanel h2 {
+    text-align: center;
+    margin-right: 120px;
+    margin-bottom: 20px;
+}
+
+#actionPanel {
+    text-align: center;
+}
+
+#ownPlayerName, #opponentPlayerName {
+    width: 482px;
+    height: 50px;
+    margin-right: 70px;
+    line-height: 50px;
+    vertical-align: middle;
+}
+
+#ownPlayerName h4, #opponentPlayerName h4 {
+    line-height: 50px;
+}
+
+#opponentPanel {
+    margin-right: 70px;
+}
+
+#ownerGameBoard, #opponentGameBoard {
+    position: relative;
+    width: 482px;
+    height: 482px;
+    margin-right: 70px;
+    margin-bottom: 20px;
+}
+
+#ownerGameBoard {
+    border: 1px solid rosybrown;
+}
+
+#opponentGameBoard {
+    border: 1px solid #21672c;
+}
+
+#ownerGameBoard div, #opponentGameBoard div {
+    position: absolute;
+    -webkit-box-sizing: border-box; /* Safari 3.0 - 5.0, Chrome 1 - 9, Android 2.1 - 3.x */
+    -moz-box-sizing: border-box; /* Firefox 1 - 28 */
+    box-sizing: border-box; /* Safari 5.1+, Chrome 10+, Firefox 29+, Opera 7+, IE 8+, Android 4.0+, iOS any */
+    background: #f6f8f9; /* Old browsers */
+    border: 1px solid #ddd;
+    width: 30px;
+    height: 30px;
+}
