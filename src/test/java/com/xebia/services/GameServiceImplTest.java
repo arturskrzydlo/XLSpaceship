@@ -71,6 +71,7 @@ public class GameServiceImplTest {
         game.setStatus(GameStatus.ACTIVE);
         game.setOwnerPlayer(DTOMapperUtil.mapPlayerDTOToPlayer(playerDTO));
         game.setId(1);
+        game.setGameId("match-1");
 
         Mockito.when(playerRepoService.findMyPlayer()).thenReturn(DTOMapperUtil.mapPlayerDTOToPlayer(playerDTO));
         Mockito.when(playerRepoService.findOpponentPlayer(Matchers.any())).thenReturn(DTOMapperUtil.mapPlayerDTOToPlayer(playerDTO));
@@ -169,10 +170,10 @@ public class GameServiceImplTest {
         newGame.getOwnerPlayer().setId(1);
         newGame.getOpponentPlayer().setId(2);
 
-        Mockito.when(gameRepoService.getById(newGame.getId())).thenReturn(null);
+        Mockito.when(gameRepoService.getByGameId(newGame.getGameId())).thenReturn(null);
 
-        gameService.receiveSalvo(new SalvoDTO(), newGame.getId());
-        Mockito.verify(gameRepoService, Mockito.times(1)).getById(newGame.getId());
+        gameService.receiveSalvo(new SalvoDTO(), newGame.getGameId());
+        Mockito.verify(gameRepoService, Mockito.times(1)).getByGameId(newGame.getGameId());
 
     }
 
@@ -185,11 +186,11 @@ public class GameServiceImplTest {
         newGame.setStatus(GameStatus.ACTIVE);
         newGame.setPlayerInTurn(newGame.getOwnerPlayer());
 
-        Mockito.when(gameRepoService.getById(newGame.getId())).thenReturn(newGame);
+        Mockito.when(gameRepoService.getByGameId(newGame.getGameId())).thenReturn(newGame);
 
-        gameService.receiveSalvo(new SalvoDTO(), newGame.getId());
+        gameService.receiveSalvo(new SalvoDTO(), newGame.getGameId());
 
-        Mockito.verify(gameRepoService, Mockito.times(1)).getById(newGame.getId());
+        Mockito.verify(gameRepoService, Mockito.times(1)).getByGameId(newGame.getGameId());
 
     }
 
@@ -212,12 +213,12 @@ public class GameServiceImplTest {
         });
         gameBoard.placeSpaceshipsOnTheBoard();
 
-        Mockito.when(gameRepoService.getById(newGame.getId())).thenReturn(newGame);
-        Mockito.when(gameBoardRepoService.getOwnerGameBoardByGame(newGame.getId())).thenReturn(gameBoard.getFieldsCollection());
+        Mockito.when(gameRepoService.getByGameId(newGame.getGameId())).thenReturn(newGame);
+        Mockito.when(gameBoardRepoService.getOwnerGameBoardByGame(newGame.getGameId())).thenReturn(gameBoard.getFieldsCollection());
 
-        SalvoResultDTO salvoResultDTO = gameService.receiveSalvo(salvoDTO, newGame.getId());
+        SalvoResultDTO salvoResultDTO = gameService.receiveSalvo(salvoDTO, newGame.getGameId());
 
-        Mockito.verify(gameRepoService, Mockito.times(1)).getById(newGame.getId());
+        Mockito.verify(gameRepoService, Mockito.times(1)).getByGameId(newGame.getGameId());
 
         Assert.assertNull(salvoResultDTO.getGameStatus().getWinningPlayer());
         Assert.assertNotNull(salvoResultDTO.getGameStatus().getPlayerInTurn());
@@ -251,12 +252,12 @@ public class GameServiceImplTest {
 
         gameBoard.placeSpaceshipsOnTheBoard();
 
-        Mockito.when(gameRepoService.getById(newGame.getId())).thenReturn(newGame);
-        Mockito.when(gameBoardRepoService.getOwnerGameBoardByGame(newGame.getId())).thenReturn(gameBoard.getFieldsCollection());
+        Mockito.when(gameRepoService.getByGameId(newGame.getGameId())).thenReturn(newGame);
+        Mockito.when(gameBoardRepoService.getOwnerGameBoardByGame(newGame.getGameId())).thenReturn(gameBoard.getFieldsCollection());
 
-        SalvoResultDTO salvoResultDTO = gameService.receiveSalvo(salvoDTO, newGame.getId());
+        SalvoResultDTO salvoResultDTO = gameService.receiveSalvo(salvoDTO, newGame.getGameId());
 
-        Mockito.verify(gameRepoService, Mockito.times(1)).getById(newGame.getId());
+        Mockito.verify(gameRepoService, Mockito.times(1)).getByGameId(newGame.getGameId());
 
         Assert.assertEquals(salvoResultDTO.getSalvoResult().get(hitShot), HitStatus.HIT);
 

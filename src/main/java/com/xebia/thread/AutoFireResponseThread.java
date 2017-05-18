@@ -27,13 +27,13 @@ import java.util.stream.Collectors;
 public class AutoFireResponseThread extends Thread {
 
     private String fireSalvoResource = "/xl-spaceship/user/game/{0}/fire";
-    private Integer gameId;
+    private String gameId;
     private PlayerDTO opponent;
     private List<GameBoardPosition> opponentPlayerGameBoard;
     private List<GameBoardPosition> ownerPlayerGameboard;
     private RestTemplate restTemplate;
 
-    public AutoFireResponseThread(Integer gameId, PlayerDTO opponent) {
+    public AutoFireResponseThread(String gameId, PlayerDTO opponent) {
         this.gameId = gameId;
         this.opponent = opponent;
         fireSalvoResource = MessageFormat.format(fireSalvoResource, gameId.toString());
@@ -108,11 +108,11 @@ public class AutoFireResponseThread extends Thread {
 
     }
 
-    public Integer getGameId() {
+    public String getGameId() {
         return gameId;
     }
 
-    public void setGameId(Integer gameId) {
+    public void setGameId(String gameId) {
         fireSalvoResource = MessageFormat.format(fireSalvoResource, gameId.toString());
         this.gameId = gameId;
     }

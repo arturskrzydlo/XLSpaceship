@@ -8,5 +8,6 @@ import com.xebia.services.reposervices.CRUDService;
  */
 public interface GameRepoService extends CRUDService<Game> {
 
+    Game getByGameId(String gameId);
 
 }

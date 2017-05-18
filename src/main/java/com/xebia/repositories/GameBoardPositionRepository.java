@@ -11,8 +11,8 @@ import java.util.List;
  */
 public interface GameBoardPositionRepository extends CrudRepository<GameBoardPosition, Integer> {
 
-    List<GameBoardPosition> findByGameIdAndPlayerPlayerType(Integer gameId, PlayerType playerType);
+    List<GameBoardPosition> findByGameGameIdAndPlayerPlayerType(String gameId, PlayerType playerType);
 
-    List<GameBoardPosition> findByGameIdAndPlayerId(Integer gameId, Integer playerId);
+    List<GameBoardPosition> findByGameGameIdAndPlayerId(String gameId, Integer playerId);
 
 }

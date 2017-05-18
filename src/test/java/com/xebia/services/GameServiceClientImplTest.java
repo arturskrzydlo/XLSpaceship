@@ -65,17 +65,17 @@ public class GameServiceClientImplTest {
     public void inCorrectNumberOfShotsInSalvo() throws Exception {
 
         Game actualGame = new Game();
-        actualGame.setId(1);
+        actualGame.setGameId("match-1");
 
-        Mockito.when(gameRepoService.getById(actualGame.getId())).thenReturn(actualGame);
-        Mockito.when(gameBoardRepoService.getOwnerGameBoardByGame(actualGame.getId())).thenReturn(new GameBoard().getFieldsCollection());
+        Mockito.when(gameRepoService.getByGameId(actualGame.getGameId())).thenReturn(actualGame);
+        Mockito.when(gameBoardRepoService.getOwnerGameBoardByGame(actualGame.getGameId())).thenReturn(new GameBoard().getFieldsCollection());
 
         SalvoDTO salvoDTO = new SalvoDTO();
         salvoDTO.setListOfShots(Stream.of("0x1").collect(Collectors.toList()));
-        gameServiceClient.fireSalvo(actualGame.getId(), salvoDTO);
+        gameServiceClient.fireSalvo(actualGame.getGameId(), salvoDTO);
 
-        Mockito.verify(gameRepoService, Mockito.times(1)).getById(actualGame.getId());
-        Mockito.verify(gameBoardRepoService, Mockito.times(1)).getOwnerGameBoardByGame(actualGame.getId());
+        Mockito.verify(gameRepoService, Mockito.times(1)).getByGameId(actualGame.getGameId());
+        Mockito.verify(gameBoardRepoService, Mockito.times(1)).getOwnerGameBoardByGame(actualGame.getGameId());
     }
 
     @Test
@@ -83,6 +83,7 @@ public class GameServiceClientImplTest {
 
         Game actualGame = new Game();
         actualGame.setId(1);
+        actualGame.setGameId("match-1");
 
         SalvoDTO salvoDTO = new SalvoDTO();
         salvoDTO.setListOfShots(Stream.of("0x1").collect(Collectors.toList()));
@@ -100,17 +101,17 @@ public class GameServiceClientImplTest {
         opponentPlayer.setProtocol(spaceshipProtocol);
         actualGame.setOpponentPlayer(opponentPlayer);
 
-        Mockito.when(gameRepoService.getById(actualGame.getId())).thenReturn(actualGame);
+        Mockito.when(gameRepoService.getByGameId(actualGame.getGameId())).thenReturn(actualGame);
         GameBoard gameBoard = new GameBoard();
         gameBoard.getFieldsCollection().get(0).setSpaceship(new Spaceship(SpaceshipType.ANGLE));
-        Mockito.when(gameBoardRepoService.getOwnerGameBoardByGame(actualGame.getId())).thenReturn(gameBoard.getFieldsCollection());
+        Mockito.when(gameBoardRepoService.getOwnerGameBoardByGame(actualGame.getGameId())).thenReturn(gameBoard.getFieldsCollection());
         ArgumentCaptor<HttpMethod> httpStatusArgumentCaptor = ArgumentCaptor.forClass(HttpMethod.class);
 
         Mockito.when(restTemplate.exchange(any(), any(), any(), eq(SalvoResultDTO.class), anyInt())).thenReturn(new ResponseEntity<>(new SalvoResultDTO(), HttpStatus.OK));
-        gameServiceClient.fireSalvo(actualGame.getId(), salvoDTO);
+        gameServiceClient.fireSalvo(actualGame.getGameId(), salvoDTO);
 
-        Mockito.verify(gameRepoService, Mockito.times(1)).getById(actualGame.getId());
-        Mockito.verify(gameBoardRepoService, Mockito.times(1)).getOwnerGameBoardByGame(actualGame.getId());
+        Mockito.verify(gameRepoService, Mockito.times(1)).getByGameId(actualGame.getGameId());
+        Mockito.verify(gameBoardRepoService, Mockito.times(1)).getOwnerGameBoardByGame(actualGame.getGameId());
 
         verify(restTemplate, times(1)).exchange(any(), httpStatusArgumentCaptor.capture(), salvoDTOCaptor.capture(), eq(SalvoResultDTO.class), anyInt());
 
@@ -127,8 +128,8 @@ public class GameServiceClientImplTest {
     @Test(expected = NoSuchGameException.class)
     public void getGameStatusOfNotExistingGame() throws NoSuchGameException {
 
-        when(gameRepoService.getById(1)).thenReturn(null);
-        gameServiceClient.getGameStatus(1);
+        when(gameRepoService.getByGameId("match-1")).thenReturn(null);
+        gameServiceClient.getGameStatus("match-1");
 
     }
 
@@ -159,15 +160,15 @@ public class GameServiceClientImplTest {
         GameBoard opponentGameBoard = new GameBoard();
         opponentGameBoard.getFieldsCollection().stream().forEach(gameBoardPosition -> gameBoardPosition.setPlayer(opponent));
 
-        when(gameRepoService.getById(actualGame.getId())).thenReturn(actualGame);
-        when(gameBoardRepoService.getOwnerGameBoardByGame(actualGame.getId())).thenReturn(ownerGameBoard.getFieldsCollection());
-        when(gameBoardRepoService.getOpponentPlayerByGame(actualGame.getId(), opponent.getId())).thenReturn(opponentGameBoard.getFieldsCollection());
+        when(gameRepoService.getByGameId(actualGame.getGameId())).thenReturn(actualGame);
+        when(gameBoardRepoService.getOwnerGameBoardByGame(actualGame.getGameId())).thenReturn(ownerGameBoard.getFieldsCollection());
+        when(gameBoardRepoService.getOpponentPlayerByGame(actualGame.getGameId(), opponent.getId())).thenReturn(opponentGameBoard.getFieldsCollection());
 
-        GameStatusDTO gameStatusDTO = gameServiceClient.getGameStatus(actualGame.getId());
+        GameStatusDTO gameStatusDTO = gameServiceClient.getGameStatus(actualGame.getGameId());
 
-        verify(gameRepoService, times(1)).getById(actualGame.getId());
-        verify(gameBoardRepoService, times(1)).getOwnerGameBoardByGame(actualGame.getId());
-        verify(gameBoardRepoService, times(1)).getOpponentPlayerByGame(actualGame.getId(), opponent.getId());
+        verify(gameRepoService, times(1)).getByGameId(actualGame.getGameId());
+        verify(gameBoardRepoService, times(1)).getOwnerGameBoardByGame(actualGame.getGameId());
+        verify(gameBoardRepoService, times(1)).getOpponentPlayerByGame(actualGame.getGameId(), opponent.getId());
 
         assertTrue(gameStatusDTO.getOpponentGameBoard() != null);
         assertTrue(gameStatusDTO.getSelfGameBoard() != null);

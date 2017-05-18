@@ -12,7 +12,7 @@ public interface CRUDService<T> {
 
     List<?> listAll();
 
-    T getById(Integer id);
+    T getByGameId(Integer id);
 
     T saveOrUpdate(T domainObject);
 

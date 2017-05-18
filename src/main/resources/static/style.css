@@ -16,12 +16,15 @@ p, button, input {
 }
 
 .error {
+    width: 1036px;
     border: 1px solid darkred;
     height: 50px;
+    margin-top: 20px;
     background-color: #ffbeb4;
     color: darkred;
     line-height: 50px;
     vertical-align: middle;
+    padding-left: 20px;
     display: none;
 }
 
@@ -76,4 +79,9 @@ p, button, input {
     border: 1px solid #ddd;
     width: 30px;
     height: 30px;
+}
+
+#challengeAnotherPlayer {
+
+    border: 3px solid cadetblue;
 }

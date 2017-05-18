@@ -29,13 +29,18 @@ public class GameRepoServiceRepoImpl implements GameRepoService {
     }
 
     @Override
-    public Game getById(Integer id) {
+    public Game getByGameId(Integer id) {
         return gameRepository.findOne(id);
     }
 
     @Override
     public Game saveOrUpdate(Game domainObject) {
         return gameRepository.save(domainObject);
+    }
+
+    @Override
+    public Game getByGameId(String gameId) {
+        return gameRepository.findByGameId(gameId);
     }
 
     @Override

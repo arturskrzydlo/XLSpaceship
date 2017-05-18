@@ -51,15 +51,15 @@ public class GameServiceClientImpl implements GameServiceClient {
     private GameBoardRepoService gameBoardRepoService;
 
     @Override
-    public SalvoResultDTO fireSalvo(Integer gameId, SalvoDTO salvo) throws NoSuchGameException, GameHasFinishedException {
+    public SalvoResultDTO fireSalvo(String gameId, SalvoDTO salvo) throws NoSuchGameException, GameHasFinishedException {
 
-        Game actualGame = gameRepoService.getById(gameId);
+        Game actualGame = gameRepoService.getByGameId(gameId);
         validateGame(salvo, actualGame);
         PlayerDTO opponent = DTOMapperUtil.mapPlayerToPlayerDTO(actualGame.getOpponentPlayer());
         HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.setContentType(MediaType.APPLICATION_JSON);
         HttpEntity<SalvoDTO> salvoDTOHttpEntity = new HttpEntity<>(salvo, httpHeaders);
-        ResponseEntity<SalvoResultDTO> responseEntity = restTemplate.exchange(buildRequestStringFromOpponentPlayer(opponent, FIRE_SALVO_RESOURCE + "/" + actualGame.getId()), HttpMethod.PUT, salvoDTOHttpEntity, SalvoResultDTO.class, gameId);
+        ResponseEntity<SalvoResultDTO> responseEntity = restTemplate.exchange(buildRequestStringFromOpponentPlayer(opponent, FIRE_SALVO_RESOURCE + "/" + actualGame.getGameId()), HttpMethod.PUT, salvoDTOHttpEntity, SalvoResultDTO.class, gameId);
 
 
         SalvoResultDTO salvoResultDTO = responseEntity.getBody();
@@ -70,9 +70,9 @@ public class GameServiceClientImpl implements GameServiceClient {
 
 
     @Override
-    public GameStatusDTO getGameStatus(Integer gameId) throws NoSuchGameException {
+    public GameStatusDTO getGameStatus(String gameId) throws NoSuchGameException {
 
-        Game actualGame = gameRepoService.getById(gameId);
+        Game actualGame = gameRepoService.getByGameId(gameId);
         validateGameExistence(actualGame);
         return createGameStatus(actualGame);
     }
@@ -95,10 +95,21 @@ public class GameServiceClientImpl implements GameServiceClient {
     }
 
     @Override
-    public void turnOnAutopilot(Integer gameId) {
-        Game actualGame = gameRepoService.getById(gameId);
+    public void turnOnAutopilot(String gameId) {
+        Game actualGame = gameRepoService.getByGameId(gameId);
         actualGame.getOwnerPlayer().setAutopilot(true);
         gameRepoService.saveOrUpdate(actualGame);
+    }
+
+    @Override
+    public List<GameDTO> getAllGames() {
+        List<Game> allGames = (List<Game>) gameRepoService.listAll();
+        return allGames.stream().map(game -> DTOMapperUtil.mapGameToGameDTO(game)).collect(Collectors.toList());
+    }
+
+    @Override
+    public PlayerDTO getOwnerPlayerData() {
+        return OwnerUtil.getSimulationUser();
     }
 
     private GameBoard createGameBoardForOwnerPlayer(Game newGame) {
@@ -145,7 +156,7 @@ public class GameServiceClientImpl implements GameServiceClient {
             newGame.setPlayerInTurn(opponent);
         }
 
-        newGame.setId(gameCreatedDTO.getGameId());
+        newGame.setGameId(gameCreatedDTO.getGameId());
         gameRepoService.saveOrUpdate(newGame);
 
         return newGame;
@@ -160,8 +171,8 @@ public class GameServiceClientImpl implements GameServiceClient {
 
 
     private GameStatusDTO createGameStatus(Game actualGame) {
-        List<GameBoardPosition> ownerGameBoard = gameBoardRepoService.getOwnerGameBoardByGame(actualGame.getId());
-        List<GameBoardPosition> opponentGameBoard = gameBoardRepoService.getOpponentPlayerByGame(actualGame.getId(), actualGame.getOpponentPlayer().getId());
+        List<GameBoardPosition> ownerGameBoard = gameBoardRepoService.getOwnerGameBoardByGame(actualGame.getGameId());
+        List<GameBoardPosition> opponentGameBoard = gameBoardRepoService.getOpponentPlayerByGame(actualGame.getGameId(), actualGame.getOpponentPlayer().getId());
 
         GameBoardDTO ownerGameBoardDTO = createGameBoardDTO(ownerGameBoard);
         GameBoardDTO opponentGameBoardDTO = createGameBoardDTO(opponentGameBoard);
@@ -227,7 +238,7 @@ public class GameServiceClientImpl implements GameServiceClient {
 
     private void validateNumberOfShots(SalvoDTO salvoDTO, Game game) {
 
-        List<GameBoardPosition> opponentGameBoard = gameBoardRepoService.getOwnerGameBoardByGame(game.getId());
+        List<GameBoardPosition> opponentGameBoard = gameBoardRepoService.getOwnerGameBoardByGame(game.getGameId());
         long numberOfAliveSpaceships = opponentGameBoard.stream()
                 .distinct()
                 .map(gameBoardPosition -> gameBoardPosition.getSpaceship())

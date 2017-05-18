@@ -18,7 +18,7 @@ public class GameDTO {
 
     private PlayerDTO opponent;
     @JsonProperty("game_id")
-    private Integer gameId;
+    private String gameId;
     @JsonProperty("starting")
     private PlayerDTO startingPlayer;
 }

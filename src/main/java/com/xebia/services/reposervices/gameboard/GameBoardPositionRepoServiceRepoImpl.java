@@ -30,7 +30,7 @@ public class GameBoardPositionRepoServiceRepoImpl implements GameBoardRepoServic
     }
 
     @Override
-    public GameBoardPosition getById(Integer id) {
+    public GameBoardPosition getByGameId(Integer id) {
         return gameBoardPositionRepository.findOne(id);
     }
 
@@ -51,13 +51,13 @@ public class GameBoardPositionRepoServiceRepoImpl implements GameBoardRepoServic
     }
 
     @Override
-    public List<GameBoardPosition> getOwnerGameBoardByGame(Integer gameId) {
-        return gameBoardPositionRepository.findByGameIdAndPlayerPlayerType(gameId, PlayerType.OWNER);
+    public List<GameBoardPosition> getOwnerGameBoardByGame(String gameId) {
+        return gameBoardPositionRepository.findByGameGameIdAndPlayerPlayerType(gameId, PlayerType.OWNER);
     }
 
     @Override
-    public List<GameBoardPosition> getOpponentPlayerByGame(Integer gameId, Integer playerId) {
-        return gameBoardPositionRepository.findByGameIdAndPlayerId(gameId, playerId);
+    public List<GameBoardPosition> getOpponentPlayerByGame(String gameId, Integer playerId) {
+        return gameBoardPositionRepository.findByGameGameIdAndPlayerId(gameId, playerId);
     }
 
 }

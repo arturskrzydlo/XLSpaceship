@@ -65,10 +65,10 @@ public class UserControllerTest {
     @Test
     public void testFireNoWinningSalvo() throws Exception {
 
-        Integer gameId = 1;
+        String gameId = "match-1";
         initializeSalvoResult(false, salvoDTO);
 
-        Mockito.when(gameServiceClient.fireSalvo(Matchers.anyInt(), Matchers.any())).thenReturn(salvoResultDTO);
+        Mockito.when(gameServiceClient.fireSalvo(Matchers.anyString(), Matchers.any())).thenReturn(salvoResultDTO);
 
         mockMvc.perform(put("/xl-spaceship/user/game/" + gameId + "/fire")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -79,7 +79,7 @@ public class UserControllerTest {
                 .andExpect(jsonPath("$.salvo.*", hasSize(salvoResultDTO.getSalvoResult().values().size())));
 
         ArgumentCaptor<SalvoDTO> dtoArgumentCaptor = ArgumentCaptor.forClass(SalvoDTO.class);
-        verify(gameServiceClient, times(1)).fireSalvo(Matchers.anyInt(), dtoArgumentCaptor.capture());
+        verify(gameServiceClient, times(1)).fireSalvo(Matchers.anyString(), dtoArgumentCaptor.capture());
 
         assertEquals(dtoArgumentCaptor.getValue().getListOfShots().size(), salvoDTO.getListOfShots().size());
         assertTrue(dtoArgumentCaptor.getValue().getListOfShots().containsAll(salvoDTO.getListOfShots()));
@@ -90,13 +90,13 @@ public class UserControllerTest {
     @Test
     public void testFireWinningSalvo() throws Exception {
 
-        Integer gameId = 1;
+        String gameId = "match-1";
         initializeSalvoResult(true, salvoDTO);
 
         //add one kill shoot - only that salvo can be a winning salvo
         salvoResultDTO.getSalvoResult().put("0x7", HitStatus.KILL);
 
-        Mockito.when(gameServiceClient.fireSalvo(Matchers.anyInt(), Matchers.any())).thenReturn(salvoResultDTO);
+        Mockito.when(gameServiceClient.fireSalvo(Matchers.anyString(), Matchers.any())).thenReturn(salvoResultDTO);
 
         mockMvc.perform(put("/xl-spaceship/user/game/" + gameId + "/fire")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -108,7 +108,7 @@ public class UserControllerTest {
                 .andExpect(jsonPath("$.salvo.*", hasSize(salvoResultDTO.getSalvoResult().values().size())));
 
         ArgumentCaptor<SalvoDTO> dtoArgumentCaptor = ArgumentCaptor.forClass(SalvoDTO.class);
-        verify(gameServiceClient, times(1)).fireSalvo(Matchers.anyInt(), dtoArgumentCaptor.capture());
+        verify(gameServiceClient, times(1)).fireSalvo(Matchers.anyString(), dtoArgumentCaptor.capture());
 
         assertEquals(dtoArgumentCaptor.getValue().getListOfShots().size(), salvoDTO.getListOfShots().size());
         assertTrue(dtoArgumentCaptor.getValue().getListOfShots().containsAll(salvoDTO.getListOfShots()));
@@ -118,7 +118,7 @@ public class UserControllerTest {
     @Test
     public void testGetGameStatus() throws Exception {
 
-        Integer gameId = 1;
+        String gameId = "match-1";
         GameStatusDTO gameStatusDTO = createGameStatusDTO();
 
         when(gameServiceClient.getGameStatus(gameId)).thenReturn(gameStatusDTO);

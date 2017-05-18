@@ -29,7 +29,7 @@ public class SpaceshipServiceRepoImpl implements SpaceshipRepoService {
     }
 
     @Override
-    public Spaceship getById(Integer id) {
+    public Spaceship getByGameId(Integer id) {
         return spaceshipRepository.findOne(id);
     }
 

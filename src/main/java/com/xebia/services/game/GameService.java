@@ -15,7 +15,7 @@ public interface GameService {
 
     GameCreatedDTO createNewGame(PlayerDTO player) throws NotYourTurnException;
 
-    SalvoResultDTO receiveSalvo(SalvoDTO salvoDTO, Integer gameId) throws ShotOutOfBoardException, NoSuchGameException, NotYourTurnException;
+    SalvoResultDTO receiveSalvo(SalvoDTO salvoDTO, String gameId) throws ShotOutOfBoardException, NoSuchGameException, NotYourTurnException;
 
-    void updateGameAfterYourSalvo(SalvoResultDTO salvoResultDTO, Integer gameId);
+    void updateGameAfterYourSalvo(SalvoResultDTO salvoResultDTO, String gameId);
 }

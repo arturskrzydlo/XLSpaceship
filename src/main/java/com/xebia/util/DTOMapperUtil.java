@@ -56,7 +56,7 @@ public class DTOMapperUtil {
         Game result = new Game();
         result.setPlayerInTurn(mapPlayerDTOToPlayer(gameDTO.getStartingPlayer()));
         result.setOpponentPlayer(mapPlayerDTOToPlayer(gameDTO.getOpponent()));
-        result.setId(gameDTO.getGameId());
+        result.setGameId(gameDTO.getGameId());
 
         return result;
 
@@ -65,7 +65,7 @@ public class DTOMapperUtil {
     public static GameDTO mapGameToGameDTO(@NotNull Game game) {
 
         GameDTO result = new GameDTO();
-        result.setGameId(game.getId());
+        result.setGameId(game.getGameId());
         result.setOpponent(mapPlayerToPlayerDTO(game.getOpponentPlayer()));
         result.setStartingPlayer(mapPlayerToPlayerDTO(game.getPlayerInTurn()));
 
@@ -76,7 +76,7 @@ public class DTOMapperUtil {
     public static GameCreatedDTO mapGameToGameCreatedDTO(@NotNull Game game) {
 
         GameCreatedDTO result = new GameCreatedDTO();
-        result.setGameId(game.getId());
+        result.setGameId(game.getGameId());
         if (game.getOwnerPlayer() != null) {
             result.setOpponentId(game.getOwnerPlayer().getUserId());
             result.setFullName(game.getOwnerPlayer().getFullName());

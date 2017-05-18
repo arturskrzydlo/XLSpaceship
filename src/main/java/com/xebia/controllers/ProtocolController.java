@@ -30,7 +30,7 @@ public class ProtocolController {
     }
 
     @RequestMapping(value = "/game/{gameId}", method = RequestMethod.PUT)
-    public ResponseEntity<SalvoResultDTO> receiveSalvo(@PathVariable Integer gameId, @RequestBody SalvoDTO salvo) throws NoSuchGameException, NotYourTurnException {
+    public ResponseEntity<SalvoResultDTO> receiveSalvo(@PathVariable String gameId, @RequestBody SalvoDTO salvo) throws NoSuchGameException, NotYourTurnException {
         SalvoResultDTO salvoResultDTO = gameService.receiveSalvo(salvo, gameId);
         return new ResponseEntity<>(salvoResultDTO, HttpStatus.OK);
 

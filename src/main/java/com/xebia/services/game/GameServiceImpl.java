@@ -30,7 +30,6 @@ import java.util.*;
  * Created by artur.skrzydlo on 2017-05-11.
  */
 @Service
-//TODO: handling wrong "order" of request
 public class GameServiceImpl implements GameService {
 
     @Autowired
@@ -56,6 +55,7 @@ public class GameServiceImpl implements GameService {
         newGame = createGamePlayers(newGame, playerDTO);
         chooseRandomlyStartingPlayer(newGame);
         newGame.setStatus(GameStatus.ACTIVE);
+        newGame.setGameId();
         newGame = gameRepoService.saveOrUpdate(newGame);
 
         gameBoardRepoService.batchSave(createGameBoardForOwnerPlayer(newGame).getFieldsCollection());
@@ -67,9 +67,9 @@ public class GameServiceImpl implements GameService {
 
     //TODO: change gameboardposition to gameboard - to have for example method of finding field
     @Override
-    public SalvoResultDTO receiveSalvo(SalvoDTO salvoDTO, Integer gameId) throws ShotOutOfBoardException, NoSuchGameException, NotYourTurnException {
+    public SalvoResultDTO receiveSalvo(SalvoDTO salvoDTO, String gameId) throws ShotOutOfBoardException, NoSuchGameException, NotYourTurnException {
 
-        Game actualGame = gameRepoService.getById(gameId);
+        Game actualGame = gameRepoService.getByGameId(gameId);
 
         validateInput(actualGame);
         SalvoResultDTO salvoResultDTO = fireShotsOnOwnerGameboard(salvoDTO, gameBoardRepoService.getOwnerGameBoardByGame(gameId));
@@ -87,9 +87,9 @@ public class GameServiceImpl implements GameService {
         if (actualGame.getOwnerPlayer().getAutopilot()) {
 
             AutoFireResponseThread autoFireResponseThread = new AutoFireResponseThread();
-            autoFireResponseThread.setGameId(actualGame.getId());
+            autoFireResponseThread.setGameId(actualGame.getGameId());
             autoFireResponseThread.setOpponent(DTOMapperUtil.mapPlayerToPlayerDTO(actualGame.getOwnerPlayer()));
-            autoFireResponseThread.setOpponentPlayerGameBoard(gameBoardRepoService.getOpponentPlayerByGame(actualGame.getId(), actualGame.getOpponentPlayer().getId()));
+            autoFireResponseThread.setOpponentPlayerGameBoard(gameBoardRepoService.getOpponentPlayerByGame(actualGame.getGameId(), actualGame.getOpponentPlayer().getId()));
             autoFireResponseThread.setOwnerPlayerGameboard(gameBoardRepoService.getOwnerGameBoardByGame(gameId));
             autoFireResponseThread.setRestTemplate(restTemplate);
             autoFireResponseThread.start();
@@ -100,8 +100,8 @@ public class GameServiceImpl implements GameService {
 
     //TODO: add winner column to game table
     @Override
-    public void updateGameAfterYourSalvo(SalvoResultDTO salvoResultDTO, Integer gameId) {
-        Game game = gameRepoService.getById(gameId);
+    public void updateGameAfterYourSalvo(SalvoResultDTO salvoResultDTO, String gameId) {
+        Game game = gameRepoService.getByGameId(gameId);
 
         fireShotsOnOpponentGameboard(salvoResultDTO, gameBoardRepoService.getOpponentPlayerByGame(gameId, game.getOpponentPlayer().getId()));
         if (salvoResultDTO.getGameStatus().getPlayerInTurn() == null) {
@@ -218,7 +218,7 @@ public class GameServiceImpl implements GameService {
     private GameStatus checkGameStatus(List<GameBoardPosition> playerGameBoard) {
 
         if (isPlayerSpaceshipFleetDestroyed(playerGameBoard)) {
-            Game game = gameRepoService.getById(playerGameBoard.get(0).getGame().getId());
+            Game game = gameRepoService.getByGameId(playerGameBoard.get(0).getGame().getGameId());
             game.setStatus(GameStatus.FINISHED);
             gameRepoService.saveOrUpdate(game);
             return GameStatus.FINISHED;

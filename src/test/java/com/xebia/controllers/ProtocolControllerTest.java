@@ -73,7 +73,7 @@ public class ProtocolControllerTest {
         gameCreatedDTO.setStartingPlayerId(playerDTO.getUserId());
         gameCreatedDTO.setFullName("artur");
         gameCreatedDTO.setOpponentId("artur");
-        gameCreatedDTO.setGameId(1);
+        gameCreatedDTO.setGameId("match-1");
 
         Mockito.when(gameService.createNewGame(Matchers.any())).thenReturn(gameCreatedDTO);
 
@@ -102,11 +102,11 @@ public class ProtocolControllerTest {
     @Test
     public void testReceiveSalvo() throws Exception {
 
-        Integer gameId = 1;
+        String gameId = "match-1";
         initializeSalvo();
         initializeSalvoResult(false, salvoDTO);
 
-        Mockito.when(gameService.receiveSalvo(Matchers.any(SalvoDTO.class), Matchers.anyInt())).thenReturn(salvoResultDTO);
+        Mockito.when(gameService.receiveSalvo(Matchers.any(SalvoDTO.class), Matchers.anyString())).thenReturn(salvoResultDTO);
 
         mockMvc.perform(put("/xl-spaceship/protocol/game/" + gameId)
                 .contentType(MediaType.APPLICATION_JSON)
@@ -114,7 +114,7 @@ public class ProtocolControllerTest {
                 .andExpect(status().isOk());
 
         ArgumentCaptor<SalvoDTO> dtoArgumentCaptor = ArgumentCaptor.forClass(SalvoDTO.class);
-        verify(gameService, times(1)).receiveSalvo(dtoArgumentCaptor.capture(), Matchers.anyInt());
+        verify(gameService, times(1)).receiveSalvo(dtoArgumentCaptor.capture(), Matchers.anyString());
 
         assertEquals(dtoArgumentCaptor.getValue().getListOfShots().size(), salvoDTO.getListOfShots().size());
         assertTrue(dtoArgumentCaptor.getValue().getListOfShots().containsAll(salvoDTO.getListOfShots()));
@@ -122,11 +122,11 @@ public class ProtocolControllerTest {
 
     @Test
     public void testReceiveSalvoWithIncorrectNumberOfShots() throws Exception {
-        Integer gameId = 1;
+        String gameId = "match-1";
         initializeSalvo();
 
         IncorretSalvoShotsAmountException incorretSalvoShotsAmountException = new IncorretSalvoShotsAmountException(5, 2);
-        Mockito.when(gameService.receiveSalvo(Matchers.any(SalvoDTO.class), Matchers.anyInt())).thenThrow(incorretSalvoShotsAmountException);
+        Mockito.when(gameService.receiveSalvo(Matchers.any(SalvoDTO.class), Matchers.anyString())).thenThrow(incorretSalvoShotsAmountException);
 
         mockMvc.perform(put("/xl-spaceship/protocol/game/" + gameId)
                 .contentType(MediaType.APPLICATION_JSON)
@@ -139,11 +139,11 @@ public class ProtocolControllerTest {
 
     @Test
     public void testReceiveSalvoWithShotOutsideGameBoard() throws Exception {
-        Integer gameId = 1;
+        String gameId = "match-1";
         initializeSalvo();
 
         ShotOutOfBoardException shotOutOfBoardException = new ShotOutOfBoardException("-1x0");
-        Mockito.when(gameService.receiveSalvo(Matchers.any(SalvoDTO.class), Matchers.anyInt())).thenThrow(shotOutOfBoardException);
+        Mockito.when(gameService.receiveSalvo(Matchers.any(SalvoDTO.class), Matchers.anyString())).thenThrow(shotOutOfBoardException);
 
         mockMvc.perform(put("/xl-spaceship/protocol/game/" + gameId)
                 .contentType(MediaType.APPLICATION_JSON)
@@ -155,11 +155,11 @@ public class ProtocolControllerTest {
 
     @Test
     public void testReceiveSalvoInYourTurn() throws Exception {
-        Integer gameId = 1;
+        String gameId = "match-1";
         initializeSalvo();
 
         NotYourTurnException notYourTurnException = new NotYourTurnException();
-        Mockito.when(gameService.receiveSalvo(Matchers.any(SalvoDTO.class), Matchers.anyInt())).thenThrow(notYourTurnException);
+        Mockito.when(gameService.receiveSalvo(Matchers.any(SalvoDTO.class), Matchers.anyString())).thenThrow(notYourTurnException);
 
         mockMvc.perform(put("/xl-spaceship/protocol/game/" + gameId)
                 .contentType(MediaType.APPLICATION_JSON)
@@ -171,11 +171,11 @@ public class ProtocolControllerTest {
 
     @Test
     public void testReceiveSalvoWithWrongGameId() throws Exception {
-        Integer gameId = 1;
+        String gameId = "match-1";
         initializeSalvo();
 
         NoSuchGameException noSuchGameException = new NoSuchGameException(gameId);
-        Mockito.when(gameService.receiveSalvo(Matchers.any(SalvoDTO.class), Matchers.anyInt())).thenThrow(noSuchGameException);
+        Mockito.when(gameService.receiveSalvo(Matchers.any(SalvoDTO.class), Matchers.anyString())).thenThrow(noSuchGameException);
 
         mockMvc.perform(put("/xl-spaceship/protocol/game/" + gameId)
                 .contentType(MediaType.APPLICATION_JSON)

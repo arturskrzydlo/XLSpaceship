@@ -31,7 +31,7 @@ public class PlayerRepoServiceRepoImpl implements PlayerRepoService {
     }
 
     @Override
-    public Player getById(Integer id) {
+    public Player getByGameId(Integer id) {
         return playerRepository.findOne(id);
     }
 

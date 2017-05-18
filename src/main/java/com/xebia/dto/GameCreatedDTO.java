@@ -22,7 +22,7 @@ public class GameCreatedDTO {
     @JsonProperty("full_name")
     private String fullName;
     @JsonProperty("game_id")
-    private Integer gameId;
+    private String gameId;
     @JsonProperty("starting")
     private String startingPlayerId;
 

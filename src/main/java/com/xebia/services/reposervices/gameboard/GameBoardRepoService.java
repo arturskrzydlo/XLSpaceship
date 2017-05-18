@@ -12,8 +12,8 @@ public interface GameBoardRepoService extends CRUDService<GameBoardPosition> {
 
     List<GameBoardPosition> batchSave(List<GameBoardPosition> positions);
 
-    List<GameBoardPosition> getOwnerGameBoardByGame(Integer gameId);
+    List<GameBoardPosition> getOwnerGameBoardByGame(String gameId);
 
-    List<GameBoardPosition> getOpponentPlayerByGame(Integer gameId, Integer playerId);
+    List<GameBoardPosition> getOpponentPlayerByGame(String gameId, Integer playerId);
 
 }
