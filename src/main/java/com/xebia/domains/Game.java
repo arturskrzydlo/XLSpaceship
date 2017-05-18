@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import javax.persistence.*;
+import java.util.UUID;
 
 /**
  * Created by artur.skrzydlo on 2017-05-11.
@@ -12,9 +13,6 @@ import javax.persistence.*;
 
 @Entity
 public class Game extends AbstractDomainClass {
-
-    @Transient
-    private static int GAME_COUNTER = 0;
 
     @Transient
     private static final String GAME_NAME_PREFIX = "match-";
@@ -57,7 +55,6 @@ public class Game extends AbstractDomainClass {
     }
 
     public void setGameId() {
-        this.gameId = GAME_NAME_PREFIX + GAME_COUNTER;
-        GAME_COUNTER++;
+        this.gameId = GAME_NAME_PREFIX + UUID.randomUUID();
     }
 }

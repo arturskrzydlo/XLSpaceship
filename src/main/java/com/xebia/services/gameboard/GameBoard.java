@@ -14,7 +14,6 @@ import java.util.stream.IntStream;
 /**
  * Created by artur.skrzydlo on 2017-05-12.
  */
-//TODO: check if spaceship is mirrored
 
 public class GameBoard {
 
@@ -65,7 +64,6 @@ public class GameBoard {
 
     //Method just in case that random placement cannot be achieved in that spaceship configuration
     // it will reset and try again. Assumption is that board can contain all of the spaceships
-    //TODO: limit number of tries - remove the assumption
     private void resetPlacing() {
         initializeGameBoard();
         placeSpaceshipsOnTheBoard();
@@ -95,6 +93,12 @@ public class GameBoard {
                 spaceShipConstruction = spaceship.getType().getSpaceshipConstruction();
 
                 int rotation = chooseRandomlyFromList(notCheckedRotations).get();
+
+                //only B can be mirrored. If rotation would be  2, then it will be 180 degrees and it will be mirrored
+                if (rotation == 2 && spaceship.getType().equals(SpaceshipType.BCLASS)) {
+                    rotation = 3;
+                }
+
                 rotateSpaceshipConstruction(rotation, spaceShipConstruction);
                 transformConstrutionToChoosenPosition(spaceShipConstruction, choosenPosition.get());
                 positionFound = placeSpaceshipConstruction(spaceship, spaceShipConstruction);
@@ -121,7 +125,6 @@ public class GameBoard {
         return result;
     }
 
-    //TODO: to many if - refactor
     private boolean checkIfCanPlaceSpaceShipOnCoordinates(Set<Point2D> spaceshipConstruction, SpaceshipType spaceshipType) {
         return spaceshipConstruction.stream().allMatch(point -> {
 

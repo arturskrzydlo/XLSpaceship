@@ -77,8 +77,6 @@ public class GameServiceClientImpl implements GameServiceClient {
         return createGameStatus(actualGame);
     }
 
-    //@TODO: Problem with many games- id of the game can exists already in DB - solution - choose game id randomly with big hash value ?
-    // maybe some hash based on port - address ip
     @Override
     public GameCreatedDTO challengePlayerForAGame(PlayerDTO playerToChallenge) {
 

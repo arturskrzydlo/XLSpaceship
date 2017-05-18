@@ -31,7 +31,6 @@ import java.util.stream.Stream;
 /**
  * Created by artur.skrzydlo on 2017-05-13.
  */
-//TODO:more tests !
 @RunWith(SpringRunner.class)
 public class GameServiceImplTest {
 

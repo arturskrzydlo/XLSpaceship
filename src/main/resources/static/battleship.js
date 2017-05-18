@@ -331,6 +331,7 @@ function setupGame(gameStatus) {
     availableGamesSize++;
     $("#selectGame").append('<option value="' + gameId + '">' + gameId + '</option>');
     $("#selectGame").val(gameId);
+    clearGameBoards()
     clearSalvoMarks();
 
 }

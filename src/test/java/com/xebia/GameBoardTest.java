@@ -19,7 +19,6 @@ import static org.junit.Assert.*;
  * Created by artur.skrzydlo on 2017-05-13.
  */
 
-//TODO check correct construction, check not touch neighbour
 
 @RunWith(MockitoJUnitRunner.class)
 public class GameBoardTest {

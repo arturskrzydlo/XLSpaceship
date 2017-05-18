@@ -32,10 +32,8 @@
         <h2>Control panel</h2>
         <div id="actionPanel" class="row">
             <div class="row col-md-3">
-                <form class="form-horizontal" id="selectGameForm" action="">
                     <select class="form-control" id="selectGame">
                     </select>
-                </form>
             </div>
             <div class="row col-md-3">
                 <button type="submit" class="btn btn-default" id="checkGameBtn">Check game status</button>
@@ -50,21 +48,21 @@
 
         <h2>Opponent location</h2>
         <div id="opponentPanel">
-            <form class="form-horizontal" id="startGameForm" action="">
-                <div class="form-group">
-                    <label class="col-sm-2 control-label">Hostname:</label>
+            <form class="form-horizontal" style="margin:auto; width:50%" id="startGameForm" action="">
+                <div class="form-group" style="margin:auto; width:50%">
+                    <label class="col-sm-2 control-label" style="width:auto">Hostname:</label>
                     <div class="col-sm-10">
                         <input id="hostname" type="text" style="width:auto" class="form-control"/>
                     </div>
                 </div>
-                <div class="form-group">
-                    <label class="col-sm-2 control-label">Port:</label>
+                <div class="form-group" style="margin:auto; width:50%">
+                    <label class="col-sm-2 control-label" style="width:auto">Port:</label>
                     <div class="col-sm-10">
                         <input id="port" type="text" style="width:auto" class="form-control"/>
                     </div>
                 </div>
 
-                <div class="row" style="text-align: center">
+                <div class="row" style="text-align: center; margin-top:30px; margin-right:10px;">
                     <button type="submit" class="btn btn-default" id="challengeAnotherPlayer">Start new game</button>
                 </div>
             </form>

@@ -11,7 +11,6 @@ import java.io.IOException;
  * Created by artur.skrzydlo on 2017-05-14.
  */
 
-//TODO: maybe something smarter ?
 public class ClientErrorHandler implements ResponseErrorHandler {
 
     private ResponseErrorHandler myErrorHandler = new DefaultResponseErrorHandler();
