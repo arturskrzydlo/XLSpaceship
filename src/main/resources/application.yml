@@ -12,4 +12,5 @@ player:
     fullname: artur skrzydlo
     hostname: localhost
     port: ${server.port}
-
+security:
+  ignored: /**

@@ -1,6 +1,7 @@
 package com.xebia.config;
 
 import com.xebia.exceptions.ClientErrorHandler;
+import org.jasypt.util.password.StrongPasswordEncryptor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
@@ -19,5 +20,12 @@ public class CommonBeanConfiguration {
         RestTemplate restTemplate = new RestTemplate();
         restTemplate.setErrorHandler(new ClientErrorHandler());
         return restTemplate;
+    }
+
+
+    @Bean
+    public StrongPasswordEncryptor strongEncryptor() {
+        StrongPasswordEncryptor encryptor = new StrongPasswordEncryptor();
+        return encryptor;
     }
 }

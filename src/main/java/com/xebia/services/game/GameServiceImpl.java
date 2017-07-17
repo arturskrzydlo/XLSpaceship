@@ -17,7 +17,6 @@ import com.xebia.services.gameboard.GameBoardService;
 import com.xebia.services.reposervices.game.GameRepoService;
 import com.xebia.services.reposervices.gameboard.GameBoardRepoService;
 import com.xebia.services.reposervices.player.PlayerRepoService;
-import com.xebia.thread.AutoFireResponseThread;
 import com.xebia.util.DTOMapperUtil;
 import com.xebia.util.OwnerUtil;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,6 +45,9 @@ public class GameServiceImpl implements GameService {
 
     @Autowired
     private RestTemplate restTemplate;
+
+    @Autowired
+    private AutoPilotEventPublisher autoPilotEventPublisher;
 
     @Override
     public GameCreatedDTO createNewGame(PlayerDTO playerDTO) throws NotYourTurnException {
@@ -85,14 +87,8 @@ public class GameServiceImpl implements GameService {
 
         gameRepoService.saveOrUpdate(actualGame);
         if (actualGame.getOwnerPlayer().getAutopilot()) {
-
-            AutoFireResponseThread autoFireResponseThread = new AutoFireResponseThread();
-            autoFireResponseThread.setGameId(actualGame.getGameId());
-            autoFireResponseThread.setOpponent(DTOMapperUtil.mapPlayerToPlayerDTO(actualGame.getOwnerPlayer()));
-            autoFireResponseThread.setOpponentPlayerGameBoard(gameBoardRepoService.getOpponentPlayerByGame(actualGame.getGameId(), actualGame.getOpponentPlayer().getId()));
-            autoFireResponseThread.setOwnerPlayerGameboard(gameBoardRepoService.getOwnerGameBoardByGame(gameId));
-            autoFireResponseThread.setRestTemplate(restTemplate);
-            autoFireResponseThread.start();
+            AutoPilotEvent autoPilotEvent = new AutoPilotEvent(actualGame);
+            autoPilotEventPublisher.publish(autoPilotEvent);
         }
         return salvoResultDTO;
     }

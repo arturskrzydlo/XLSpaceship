@@ -14,7 +14,6 @@ public class GameBoardServiceImpl implements GameBoardService {
     private Logger logger = LoggerFactory.getLogger(GameBoardServiceImpl.class);
 
     private GameBoardRepoService gameBoardRepoService;
-
     @Override
     public GameBoard createGameBoard() {
 

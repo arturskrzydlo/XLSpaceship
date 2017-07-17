@@ -10,4 +10,7 @@ public interface GameRepository extends CrudRepository<Game, Integer> {
 
     Game findByGameId(String gameId);
 
+    //TODO: Check
+    /*List<Game> findAll();*/
+
 }
