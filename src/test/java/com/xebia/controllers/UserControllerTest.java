@@ -1,7 +1,6 @@
 package com.xebia.controllers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.xebia.config.TestConfiguration;
 import com.xebia.dto.*;
 import com.xebia.enums.HitStatus;
 import com.xebia.services.game.GameServiceClient;
@@ -9,14 +8,17 @@ import com.xebia.services.gameboard.GameBoard;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.*;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Matchers;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -37,15 +39,14 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * Created by artur.skrzydlo on 2017-05-14.
  */
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = TestConfiguration.class)
+@WebMvcTest(controllers = UserController.class)
+@AutoConfigureMockMvc
 public class UserControllerTest {
 
-    @Mock
+    @MockBean
     private GameServiceClient gameServiceClient;
 
-    @InjectMocks
-    private UserController userController;
-
+    @Autowired
     private MockMvc mockMvc;
 
     @Autowired
@@ -53,8 +54,6 @@ public class UserControllerTest {
 
     @Before
     public void setup() {
-        MockitoAnnotations.initMocks(this);
-        mockMvc = MockMvcBuilders.standaloneSetup(userController).build();
         initializeSalvo();
     }
 
