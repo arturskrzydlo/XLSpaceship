@@ -1,6 +1,5 @@
 package com.xebia.services.gameboard;
 
-
 import com.xebia.domains.GameBoardPosition;
 import com.xebia.domains.Spaceship;
 import com.xebia.enums.SpaceshipType;
@@ -11,7 +10,6 @@ import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-
 
 /**
  * Created by artur.skrzydlo on 2017-05-12.
