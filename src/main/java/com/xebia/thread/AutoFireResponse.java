@@ -42,6 +42,10 @@ public class AutoFireResponse {
     public AutoFireResponse() {
     }
 
+    private static Object processGeneralException(Throwable throwable) {
+        throw new RuntimeException(throwable);
+    }
+
 
     public Optional<SalvoResultDTO> autoFireResponseOpponent() {
 
@@ -60,11 +64,15 @@ public class AutoFireResponse {
 
         CompletableFuture<Optional<SalvoResultDTO>> futureResult = CompletableFuture.supplyAsync(this::executeAutoFireResponseOpponentAsync);
         ScheduledExecutorService scheduledExecutorService = Executors.newSingleThreadScheduledExecutor();
+        CompletableFuture<Object> result = CompletableFuture.anyOf(ThreadUtils.timeoutAfter(10, TimeUnit.SECONDS), futureResult);
 
         scheduledExecutorService.scheduleAtFixedRate(() -> {
-            if (futureResult.isDone()) {
-                salvoResultDTO = futureResult.join().get();
-                System.out.println(salvoResultDTO);
+            System.out.println("Checking if job is done");
+            if (result.isDone()) {
+                System.out.println("JOB Done");
+                result
+                        .exceptionally(AutoFireResponse::processGeneralException)
+                        .thenAccept(salvoResult -> salvoResultDTO = (SalvoResultDTO) salvoResult);
                 scheduledExecutorService.shutdown();
             }
 
@@ -86,7 +94,7 @@ public class AutoFireResponse {
             e.printStackTrace();
         }
 
-        while (resultDTO.isPresent()) {
+        while (!resultDTO.isPresent()) {
             resultDTO = executeAutoFireResponseOpponentAsync();
         }
 
