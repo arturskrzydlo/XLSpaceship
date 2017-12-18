@@ -13,6 +13,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.concurrent.ExecutionException;
+
 /**
  * Created by artur.skrzydlo on 2017-05-10.
  */
@@ -34,7 +36,7 @@ public class ProtocolController {
     }
 
     @RequestMapping(value = "/game/{gameId}", method = RequestMethod.PUT)
-    public ResponseEntity<SalvoResultDTO> receiveSalvo(@PathVariable String gameId, @RequestBody SalvoDTO salvo) throws NoSuchGameException, NotYourTurnException {
+    public ResponseEntity<SalvoResultDTO> receiveSalvo(@PathVariable String gameId, @RequestBody SalvoDTO salvo) throws NoSuchGameException, NotYourTurnException, ExecutionException, InterruptedException {
         logger.info("Receiving salvo " + salvo + " for game " + gameId);
         SalvoResultDTO salvoResultDTO = gameService.receiveSalvo(salvo, gameId);
         logger.info("Salvo result is : " + salvoResultDTO);

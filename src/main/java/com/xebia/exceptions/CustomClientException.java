@@ -16,6 +16,10 @@ public class CustomClientException extends RuntimeException {
         super(msg);
     }
 
+    public CustomClientException(CustomClientException exc) {
+        super(exc);
+    }
+
     public CustomClientException(HttpStatus statusCode, String body, String msg) {
         super(msg);
         this.statusCode = statusCode;

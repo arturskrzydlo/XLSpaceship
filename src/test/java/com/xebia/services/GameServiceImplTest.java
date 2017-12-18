@@ -25,6 +25,7 @@ import org.mockito.*;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import java.util.ArrayList;
+import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -163,7 +164,7 @@ public class GameServiceImplTest {
     }
 
     @Test(expected = NoSuchGameException.class)
-    public void receiveSalvoWithNotActualGame() throws NoSuchGameException, NotYourTurnException {
+    public void receiveSalvoWithNotActualGame() throws NoSuchGameException, NotYourTurnException, ExecutionException, InterruptedException {
 
         Game newGame = createSampleGame();
         newGame.getOwnerPlayer().setId(1);
@@ -177,7 +178,7 @@ public class GameServiceImplTest {
     }
 
     @Test(expected = NotYourTurnException.class)
-    public void receiveSalvoInYourTurn() throws NoSuchGameException, NotYourTurnException {
+    public void receiveSalvoInYourTurn() throws NoSuchGameException, NotYourTurnException, ExecutionException, InterruptedException {
 
         Game newGame = createSampleGame();
         newGame.getOwnerPlayer().setId(1);
@@ -194,7 +195,7 @@ public class GameServiceImplTest {
     }
 
     @Test
-    public void playerInTurnHasToOwnerChangedAfterSalvoReceive() throws NoSuchGameException, NotYourTurnException {
+    public void playerInTurnHasToOwnerChangedAfterSalvoReceive() throws NoSuchGameException, NotYourTurnException, ExecutionException, InterruptedException {
 
         Game newGame = createSampleGame();
         newGame.getOwnerPlayer().setId(1);
@@ -225,7 +226,7 @@ public class GameServiceImplTest {
     }
 
     @Test
-    public void testSalvoHasBeenReflectedOnGameBoard() throws NoSuchGameException, NotYourTurnException {
+    public void testSalvoHasBeenReflectedOnGameBoard() throws NoSuchGameException, NotYourTurnException, ExecutionException, InterruptedException {
 
         Game newGame = createSampleGame();
         newGame.getOwnerPlayer().setId(1);

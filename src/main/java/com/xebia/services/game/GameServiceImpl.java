@@ -17,7 +17,7 @@ import com.xebia.services.gameboard.GameBoardService;
 import com.xebia.services.reposervices.game.GameRepoService;
 import com.xebia.services.reposervices.gameboard.GameBoardRepoService;
 import com.xebia.services.reposervices.player.PlayerRepoService;
-import com.xebia.thread.AutoFireResponseThread;
+import com.xebia.thread.AutoFireResponse;
 import com.xebia.util.DTOMapperUtil;
 import com.xebia.util.OwnerUtil;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,6 +25,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.*;
+import java.util.concurrent.ExecutionException;
 
 /**
  * Created by artur.skrzydlo on 2017-05-11.
@@ -47,9 +48,9 @@ public class GameServiceImpl implements GameService {
     @Autowired
     private RestTemplate restTemplate;
 
+
     @Override
     public GameCreatedDTO createNewGame(PlayerDTO playerDTO) throws NotYourTurnException {
-
 
         Game newGame = new Game();
         newGame = createGamePlayers(newGame, playerDTO);
@@ -67,7 +68,7 @@ public class GameServiceImpl implements GameService {
 
     //TODO: change gameboardposition to gameboard - to have for example method of finding field
     @Override
-    public SalvoResultDTO receiveSalvo(SalvoDTO salvoDTO, String gameId) throws ShotOutOfBoardException, NoSuchGameException, NotYourTurnException {
+    public SalvoResultDTO receiveSalvo(SalvoDTO salvoDTO, String gameId) throws ShotOutOfBoardException, NoSuchGameException, NotYourTurnException, ExecutionException, InterruptedException {
 
         Game actualGame = gameRepoService.getByGameId(gameId);
 
@@ -86,13 +87,15 @@ public class GameServiceImpl implements GameService {
         gameRepoService.saveOrUpdate(actualGame);
         if (actualGame.getOwnerPlayer().getAutopilot()) {
 
-            AutoFireResponseThread autoFireResponseThread = new AutoFireResponseThread();
-            autoFireResponseThread.setGameId(actualGame.getGameId());
-            autoFireResponseThread.setOpponent(DTOMapperUtil.mapPlayerToPlayerDTO(actualGame.getOwnerPlayer()));
-            autoFireResponseThread.setOpponentPlayerGameBoard(gameBoardRepoService.getOpponentPlayerByGame(actualGame.getGameId(), actualGame.getOpponentPlayer().getId()));
-            autoFireResponseThread.setOwnerPlayerGameboard(gameBoardRepoService.getOwnerGameBoardByGame(gameId));
-            autoFireResponseThread.setRestTemplate(restTemplate);
-            autoFireResponseThread.start();
+            AutoFireResponse autoFireResponse = new AutoFireResponse();
+            autoFireResponse.setGameId(actualGame.getGameId());
+            autoFireResponse.setOpponent(DTOMapperUtil.mapPlayerToPlayerDTO(actualGame.getOwnerPlayer()));
+            autoFireResponse.setOpponentPlayerGameBoard(gameBoardRepoService.getOpponentPlayerByGame(actualGame.getGameId(), actualGame.getOpponentPlayer().getId()));
+            autoFireResponse.setOwnerPlayerGameboard(gameBoardRepoService.getOwnerGameBoardByGame(gameId));
+            autoFireResponse.setRestTemplate(restTemplate);
+            autoFireResponse.autoFire();
+
+
         }
         return salvoResultDTO;
     }

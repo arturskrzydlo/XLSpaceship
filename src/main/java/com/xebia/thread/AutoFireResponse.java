@@ -1,14 +1,13 @@
 package com.xebia.thread;
 
+import com.sun.istack.internal.Nullable;
 import com.xebia.domains.GameBoardPosition;
 import com.xebia.dto.PlayerDTO;
 import com.xebia.dto.SalvoDTO;
 import com.xebia.dto.SalvoResultDTO;
 import com.xebia.dto.SpaceshipProtocolDTO;
 import com.xebia.enums.HitStatus;
-import com.xebia.exceptions.CustomClientException;
 import com.xebia.exceptions.NotYourTurnException;
-import org.springframework.context.annotation.Scope;
 import org.springframework.http.*;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
@@ -16,15 +15,15 @@ import org.springframework.web.client.RestTemplate;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ThreadLocalRandom;
+import java.util.Optional;
+import java.util.concurrent.*;
 import java.util.stream.Collectors;
 
 /**
  * Created by artur.skrzydlo on 2017-05-16.
  */
 @Component
-@Scope("prototype")
-public class AutoFireResponseThread extends Thread {
+public class AutoFireResponse {
 
     private String fireSalvoResource = "/xl-spaceship/user/game/{0}/fire";
     private String gameId;
@@ -32,39 +31,77 @@ public class AutoFireResponseThread extends Thread {
     private List<GameBoardPosition> opponentPlayerGameBoard;
     private List<GameBoardPosition> ownerPlayerGameboard;
     private RestTemplate restTemplate;
+    private SalvoResultDTO salvoResultDTO;
 
-    public AutoFireResponseThread(String gameId, PlayerDTO opponent) {
+    public AutoFireResponse(String gameId, PlayerDTO opponent) {
         this.gameId = gameId;
         this.opponent = opponent;
         fireSalvoResource = MessageFormat.format(fireSalvoResource, gameId.toString());
     }
 
-    public AutoFireResponseThread() {
+    public AutoFireResponse() {
     }
 
-    @Override
-    public void run() {
+
+    public Optional<SalvoResultDTO> autoFireResponseOpponent() {
 
         HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.setContentType(MediaType.APPLICATION_JSON);
         SalvoDTO salvoDTO = createRandomSalvo();
 
-        try {
-            HttpEntity<SalvoDTO> salvoDTOHttpEntity = new HttpEntity<>(salvoDTO, httpHeaders);
-            ResponseEntity<SalvoResultDTO> responseEntity = restTemplate.exchange(buildRequestStringFromOpponentPlayer(opponent, fireSalvoResource), HttpMethod.PUT, salvoDTOHttpEntity, SalvoResultDTO.class);
-            SalvoResultDTO salvoResultDTO = responseEntity.getBody();
-        } catch (CustomClientException exc) {
+        HttpEntity<SalvoDTO> salvoDTOHttpEntity = new HttpEntity<>(salvoDTO, httpHeaders);
+        ResponseEntity<SalvoResultDTO> responseEntity = restTemplate.exchange(buildRequestStringFromOpponentPlayer(opponent, fireSalvoResource), HttpMethod.PUT, salvoDTOHttpEntity, SalvoResultDTO.class);
+        SalvoResultDTO salvoResultDTO = responseEntity.getBody();
+        return Optional.ofNullable(salvoResultDTO);
 
-            if (exc.getBody().contains(NotYourTurnException.MESSAGE)) {
-                AutoFireResponseThread autoFireResponseThread = new AutoFireResponseThread();
-                autoFireResponseThread.setGameId(gameId);
-                autoFireResponseThread.setOpponent(getOpponent());
-                autoFireResponseThread.setOpponentPlayerGameBoard(getOpponentPlayerGameBoard());
-                autoFireResponseThread.setOwnerPlayerGameboard(getOwnerPlayerGameboard());
-                autoFireResponseThread.setRestTemplate(getRestTemplate());
-                autoFireResponseThread.start();
+    }
+
+    public void autoFire() {
+
+        CompletableFuture<Optional<SalvoResultDTO>> futureResult = CompletableFuture.supplyAsync(this::executeAutoFireResponseOpponentAsync);
+        ScheduledExecutorService scheduledExecutorService = Executors.newSingleThreadScheduledExecutor();
+
+        scheduledExecutorService.scheduleAtFixedRate(() -> {
+            if (futureResult.isDone()) {
+                salvoResultDTO = futureResult.join().get();
+                System.out.println(salvoResultDTO);
+                scheduledExecutorService.shutdown();
             }
+
+        }, 500, 500, TimeUnit.MILLISECONDS);
+    }
+
+    public Optional<SalvoResultDTO> executeAutoFireResponseOpponentAsync() {
+
+        Optional<SalvoResultDTO> resultDTO = Optional.empty();
+        CompletableFuture<Optional<SalvoResultDTO>> futureResult = CompletableFuture.supplyAsync(this::autoFireResponseOpponent);
+
+        try {
+            resultDTO = futureResult
+                    .exceptionally(this::processCustomClientException)
+                    .thenApply(result -> result).get();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (ExecutionException e) {
+            e.printStackTrace();
         }
+
+        while (resultDTO.isPresent()) {
+            resultDTO = executeAutoFireResponseOpponentAsync();
+        }
+
+        return resultDTO;
+    }
+
+    @Nullable
+    private Optional<SalvoResultDTO> processCustomClientException(Throwable exception) {
+
+        if (exception.getMessage().contains(NotYourTurnException.MESSAGE)) {
+            return Optional.empty();
+        } else {
+            throw new RuntimeException(exception);
+        }
+
     }
 
 
